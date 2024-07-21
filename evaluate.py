@@ -1,10 +1,12 @@
 import argparse
 import os
 import tqdm
+from collections import deque
 from omegaconf import OmegaConf
 
 import accelerate
 import torch
+import torch.nn.functional as F
 from piqa import PSNR, SSIM
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
@@ -90,7 +92,8 @@ def main():
         os.makedirs(os.path.join(args.save_dir, 'reconstructed'), exist_ok=True)
     psnr_fn = PSNR(reduction='none').to(device)
     ssim_fn = SSIM(reduction='none').to(device)
-    psnr_list, ssim_list, indices_list = [], [], []
+    psnr_list, ssim_list, indices_queue = [], [], deque(maxlen=65536)
+
     with torch.no_grad():
         for x in tqdm.tqdm(dataloader, desc='Evaluating', disable=not accelerator.is_main_process):
             x = discard_label(x)
@@ -105,10 +108,9 @@ def main():
             psnr = accelerator.gather_for_metrics(psnr)
             ssim = accelerator.gather_for_metrics(ssim)
             indices = accelerator.gather_for_metrics(indices)
-            indices = torch.unique(indices)
             psnr_list.append(psnr)
             ssim_list.append(ssim)
-            indices_list.append(indices)
+            indices_queue.extend(indices.tolist())
 
             x = accelerator.gather_for_metrics(x)
             decx = accelerator.gather_for_metrics(decx)
@@ -120,10 +122,17 @@ def main():
 
     psnr = torch.cat(psnr_list, dim=0).mean().item()
     ssim = torch.cat(ssim_list, dim=0).mean().item()
-    indices = torch.unique(torch.cat(indices_list, dim=0))
+
+    indices = torch.tensor(indices_queue)
+    codebook_num = unwrapped_vqmodel.codebook_num
+    indices_one_hot = F.one_hot(indices, num_classes=codebook_num).float()
+    probs = torch.mean(indices_one_hot, dim=0)
+    perplexity = torch.exp(-torch.sum(probs * torch.log(torch.clamp(probs, 1e-10))))
+
     logger.info(f'PSNR: {psnr:.4f}')
     logger.info(f'SSIM: {ssim:.4f}')
-    logger.info(f'Codebook usage: {len(indices) / unwrapped_vqmodel.codebook_num * 100:.2f}%')
+    logger.info(f'Codebook usage: {len(torch.unique(indices)) / codebook_num * 100:.2f}%')
+    logger.info(f'Perplexity: {perplexity:.4f}')
 
 
 if __name__ == '__main__':
