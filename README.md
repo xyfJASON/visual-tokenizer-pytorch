@@ -4,6 +4,8 @@ Implement visual tokenizers with PyTorch.
 
 <br/>
 
+
+
 ## Results
 
 ### CelebA(64x64)
@@ -23,7 +25,7 @@ Implement visual tokenizers with PyTorch.
     <th style="text-align: center">rFID↓</th>
 </tr>
 <tr>
-    <td style="text-align: center" rowspan="6"><a href="./models/autoencoder/simple_cnn.py">Simple CNN</a></td>
+    <td style="text-align: center" rowspan="7"><a href="./models/autoencoder/simple_cnn.py">Simple CNN</a></td>
     <td style="text-align: center" rowspan="5">VQ loss</td>
     <td style="text-align: center">64</td>
     <td style="text-align: center">512</td>
@@ -70,7 +72,7 @@ Implement visual tokenizers with PyTorch.
     <td style="text-align: center">16.3249</td>
 </tr>
 <tr>
-    <td style="text-align: center">EMA</td>
+    <td style="text-align: center" rowspan="2">EMA</td>
     <td style="text-align: center">64</td>
     <td style="text-align: center">512</td>
     <td style="text-align: center">100.00%</td>
@@ -79,9 +81,18 @@ Implement visual tokenizers with PyTorch.
     <td style="text-align: center">0.9459</td>
     <td style="text-align: center">15.5629</td>
 </tr>
+<tr>
+    <td style="text-align: center">4</td>
+    <td style="text-align: center">512</td>
+    <td style="text-align: center">100.00%</td>
+    <td style="text-align: center">435.1512</td>
+    <td style="text-align: center">32.3069</td>
+    <td style="text-align: center">0.9468</td>
+    <td style="text-align: center">16.3338</td>
+</tr>
 </table>
 
-- Results are tested on 19962 images of CelebA test set.
+- Results are tested on CelebA test set which contains 19962 images.
 - Codebook usage is calculated as the percentage of used codes in the queue of size 65536 over the whole codebook size.
 - Perplexity is also calculated based on the queue of size 65536.
 
@@ -98,9 +109,14 @@ Implement visual tokenizers with PyTorch.
     </tr>
 </table>
 
-It can be seen that the EMA codebook achieves better reconstruction quality and codebook usage than the VQ loss codebook.
+**Conclusions**:
+
+- Smaller codebook dimension leads to higher codebook usage and better reconstruction quality.
+- EMA codebook achieves better codebook usage and reconstruction quality than the VQ loss codebook.
 
 <br/>
+
+
 
 ## Installation
 

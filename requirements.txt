@@ -1,5 +1,6 @@
 tqdm
 numpy
+pillow
 omegaconf
 matplotlib
 tensorboard
@@ -7,4 +8,5 @@ piqa~=1.3.2
 torch~=2.1.1
 torchvision~=0.16.1
 accelerate~=0.24.0
+lpips==0.1.4
 git+https://github.com/toshas/torch-fidelity.git@master#egg=torch-fidelity
