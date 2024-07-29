@@ -8,7 +8,7 @@ Implement visual tokenizers with PyTorch.
 
 ## Results
 
-### CelebA(64x64)
+### VQVAE on CelebA(64x64)
 
 **Quantitative results**:
 
@@ -120,20 +120,20 @@ Implement visual tokenizers with PyTorch.
 
 - The network architecture for all the experiments above is [SimpleCNN](./models/autoencoder/simple_cnn.py).
 - Results are tested on CelebA test set which contains 19962 images.
-- Codebook usage is calculated as the percentage of used codes in the queue of size 65536 over the whole codebook size.
-- Perplexity is also calculated based on the queue of size 65536.
+- Codebook usage is calculated as the percentage of used codes in a queue of size 65536 over the whole codebook size.
+- Perplexity is also calculated based on a queue of size 65536.
 
 **Visualizations**:
 
 <table>
-    <tr>
-        <th style="text-align: center">VQ loss (64 / 512)</th>
-        <th style="text-align: center">EMA (64 / 512)</th>
-    </tr>
-    <tr>
-        <td style="text-align: center"><img src="./assets/vqvae-celeba-reconstruct.png" style="width: 200px" alt="" /></td>
-        <td style="text-align: center"><img src="./assets/vqvae-ema-celeba-reconstruct.png" style="width: 200px" alt="" /></td>
-    </tr>
+<tr>
+    <th style="text-align: center">VQ loss (64 / 512)</th>
+    <th style="text-align: center">EMA (64 / 512)</th>
+</tr>
+<tr>
+    <td style="text-align: center"><img src="./assets/vqvae-celeba.png" style="width: 200px" alt="" /></td>
+    <td style="text-align: center"><img src="./assets/vqvae-ema-celeba.png" style="width: 200px" alt="" /></td>
+</tr>
 </table>
 
 **Conclusions**:
@@ -141,6 +141,40 @@ Implement visual tokenizers with PyTorch.
 - Smaller codebook dimension leads to higher codebook usage and better reconstruction quality.
 - EMA codebook achieves better codebook usage and reconstruction quality than the VQ loss codebook.
 - The l2-normalized codes can improve the codebook usage and reconstruction quality.
+
+
+
+### VQGAN on ImageNet(256x256)
+
+**Quantitative results**:
+
+<table style="text-align: center;">
+<tr>
+    <th style="text-align: center">Quantizer type</th>
+    <th style="text-align: center">Codebook dim.</th>
+    <th style="text-align: center">Codebook size</th>
+    <th style="text-align: center">Codebook usage↑</th>
+    <th style="text-align: center">Perplexity↑</th>
+    <th style="text-align: center">PSNR↑</th>
+    <th style="text-align: center">SSIM↑</th>
+    <th style="text-align: center">rFID↓</th>
+</tr>
+<tr>
+    <td style="text-align: center">VQ loss</td>
+    <td style="text-align: center">256</td>
+    <td style="text-align: center">1024</td>
+    <td style="text-align: center">96.58%</td>
+    <td style="text-align: center">815.9432</td>
+    <td style="text-align: center">20.4622</td>
+    <td style="text-align: center">0.5212</td>
+    <td style="text-align: center">25.6434</td>
+</tr>
+</table>
+
+- The network architecture for all the experiments above follows the original [VQGAN](./models/autoencoder/vqgan_net.py).
+- Results are tested on ImageNet validation set which contains 50000 images.
+- Codebook usage is calculated as the percentage of used codes in a queue of size 65536 over the whole codebook size.
+- Perplexity is also calculated based on a queue of size 65536.
 
 <br/>
 

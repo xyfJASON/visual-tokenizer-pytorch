@@ -2,6 +2,8 @@ import torchvision.datasets as dset
 import torchvision.transforms as T
 import torchvision.transforms.functional as TF
 
+from datasets.imagenet import ImageNet
+
 
 def load_data(conf, split='train'):
     """Keys in conf: 'name', 'root', 'img_size'."""
@@ -36,6 +38,18 @@ def load_data(conf, split='train'):
             T.Normalize([0.5] * 3, [0.5] * 3),
         ])
         dataset = dset.CelebA(root=conf.root, split=split, transform=transform)
+
+    elif conf.name.lower() == 'imagenet':
+        flip_p = 0.5 if split == 'train' else 0.0
+        crop = T.RandomCrop if split == 'train' else T.CenterCrop
+        transform = T.Compose([
+            T.Resize(conf.img_size, antialias=True),
+            crop(conf.img_size),
+            T.RandomHorizontalFlip(p=flip_p),
+            T.ToTensor(),
+            T.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        ])
+        dataset = ImageNet(root=conf.root, split=split, transforms=transform)
 
     else:
         raise NotImplementedError(f'Unknown dataset: {conf.name}')
