@@ -1,0 +1,75 @@
+seed: 8888
+
+data:
+  name: imagenet
+  root: ~/data/ImageNet/ILSVRC2012/Images
+  img_size: 256
+  crop: random
+
+dataloader:
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+
+encoder:
+  target: models.autoencoder.vqgan_net.Encoder
+  params:
+    in_channels: 3
+    z_channels: 256
+    dim: 128
+    dim_mults: [1, 1, 2, 2, 4]
+    num_res_blocks: 2
+    dropout: 0.0
+
+decoder:
+  target: models.autoencoder.vqgan_net.Decoder
+  params:
+    out_channels: 3
+    z_channels: 256
+    dim: 128
+    dim_mults: [1, 1, 2, 2, 4]
+    num_res_blocks: 2
+    dropout: 0.0
+
+quantizer:
+  target: models.quantizer.VectorQuantizer
+  params:
+    codebook_num: 1024
+    codebook_dim: 256
+
+disc:
+  target: models.discriminator.patchgan.PatchGANDiscriminator
+  params:
+    in_channels: 3
+    dim: 64
+    n_layers: 3
+
+train:
+  n_steps: 500000
+  batch_size: 16
+  micro_batch_size: ~
+
+  type_rec: l1
+  coef_rec: 1.00
+  coef_lpips: 1.00
+  coef_commit: 0.25
+  coef_vq: 1.00
+  coef_adv: 0.80
+  start_adv: 250000
+  adaptive_adv_weight: True
+
+  print_freq: 500
+  sample_freq: 10000
+  save_freq: 20000
+
+  optim:
+    target: torch.optim.Adam
+    params:
+      lr: 0.0005
+      betas: [0.5, 0.9]
+
+  optim_d:
+    target: torch.optim.Adam
+    params:
+      lr: 0.0005
+      betas: [0.5, 0.9]

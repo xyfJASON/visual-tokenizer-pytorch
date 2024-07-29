@@ -54,7 +54,10 @@ def main():
     accelerator.wait_for_everyone()
 
     # BUILD DATASET & DATALOADER
-    dataset = load_data(conf.data, split='test')
+    split = 'test'
+    if conf.data.name.lower() == 'imagenet':
+        split = 'valid'
+    dataset = load_data(conf.data, split=split)
     dataloader = DataLoader(
         dataset=dataset, batch_size=args.bspp,
         shuffle=False, drop_last=False, **conf.dataloader,
@@ -99,6 +102,7 @@ def main():
             x = discard_label(x)
             out = vqmodel(x)
             decx, indices = out['decx'], out['indices']
+            decx = decx.clamp(-1, 1)
 
             x = image_norm_to_float(x)
             decx = image_norm_to_float(decx)
@@ -112,13 +116,14 @@ def main():
             ssim_list.append(ssim)
             indices_queue.extend(indices.tolist())
 
-            x = accelerator.gather_for_metrics(x)
-            decx = accelerator.gather_for_metrics(decx)
-            if args.save_dir is not None and accelerator.is_main_process:
-                for ori, dec in zip(x, decx):
-                    save_image(ori, os.path.join(args.save_dir, 'original', f'{idx}.png'))
-                    save_image(dec, os.path.join(args.save_dir, 'reconstructed', f'{idx}.png'))
-                    idx += 1
+            if args.save_dir is not None:
+                x = accelerator.gather_for_metrics(x)
+                decx = accelerator.gather_for_metrics(decx)
+                if accelerator.is_main_process:
+                    for ori, dec in zip(x, decx):
+                        save_image(ori, os.path.join(args.save_dir, 'original', f'{idx}.png'))
+                        save_image(dec, os.path.join(args.save_dir, 'reconstructed', f'{idx}.png'))
+                        idx += 1
 
     psnr = torch.cat(psnr_list, dim=0).mean().item()
     ssim = torch.cat(ssim_list, dim=0).mean().item()

@@ -31,6 +31,10 @@ class VQModel(nn.Module):
     def codebook_num(self):
         return self.quantizer.codebook_num
 
+    @property
+    def last_layer(self):
+        return self.decoder.last_layer
+
     def forward(self, x: Tensor):
         z = self.encoder(x)
         z = self.enc2code(z)

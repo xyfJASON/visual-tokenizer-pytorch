@@ -1,5 +1,6 @@
 import argparse
 import os
+from contextlib import nullcontext
 from omegaconf import OmegaConf
 
 import accelerate
@@ -10,6 +11,8 @@ from torch.utils.data import DataLoader, Subset
 from torchvision.utils import save_image
 
 from models.vqmodel import VQModel
+from losses.adversarial import HingeLoss
+from losses.lpips import LPIPSLoss
 from utils.data import load_data
 from utils.logger import get_logger
 from utils.misc import create_exp_dir, find_resume_checkpoint, instantiate_from_config
@@ -93,9 +96,10 @@ def main():
             f'get {conf.train.batch_size} % {accelerator.num_processes} != 0'
         )
     bspp = conf.train.batch_size // accelerator.num_processes
+    micro_bs = conf.train.micro_batch_size or bspp
     train_set = load_data(conf.data, split='train')
     valid_set = load_data(conf.data, split='valid')
-    valid_set = Subset(valid_set, range(32))
+    valid_set = Subset(valid_set, torch.randperm(len(valid_set))[:16])
     train_loader = DataLoader(
         dataset=train_set, batch_size=bspp,
         shuffle=True, drop_last=True, **conf.dataloader,
@@ -106,6 +110,7 @@ def main():
     )
     logger.info('=' * 19 + ' Data Info ' + '=' * 20)
     logger.info(f'Size of training set: {len(train_set)}')
+    logger.info(f'Micro batch size: {micro_bs}')
     logger.info(f'Batch size per process: {bspp}')
     logger.info(f'Total batch size: {conf.train.batch_size}')
 
@@ -113,10 +118,13 @@ def main():
     encoder = instantiate_from_config(conf.encoder)
     decoder = instantiate_from_config(conf.decoder)
     quantizer = instantiate_from_config(conf.quantizer)
+    disc = instantiate_from_config(conf.disc)
     model = VQModel(encoder=encoder, decoder=decoder, quantizer=quantizer)
     optimizer = instantiate_from_config(conf.train.optim, params=model.parameters())
+    optimizer_d = instantiate_from_config(conf.train.optim_d, params=disc.parameters())
     logger.info('=' * 19 + ' Model Info ' + '=' * 19)
-    logger.info(f'Number of parameters of model: {sum(p.numel() for p in model.parameters()):,}')
+    logger.info(f'Number of parameters of vq model: {sum(p.numel() for p in model.parameters()):,}')
+    logger.info(f'Number of parameters of discriminator: {sum(p.numel() for p in disc.parameters()):,}')
     logger.info('=' * 50)
 
     # RESUME TRAINING
@@ -127,19 +135,28 @@ def main():
         # load model
         ckpt_model = torch.load(os.path.join(resume_path, 'model.pt'), map_location='cpu')
         model.load_state_dict(ckpt_model['model'])
+        disc.load_state_dict(ckpt_model['disc'])
         logger.info(f'Successfully load model from {resume_path}')
         # load optimizer
         ckpt_optimizer = torch.load(os.path.join(resume_path, 'optimizer.pt'), map_location='cpu')
         optimizer.load_state_dict(ckpt_optimizer['optimizer'])
+        optimizer_d.load_state_dict(ckpt_optimizer['optimizer_d'])
         logger.info(f'Successfully load optimizer from {resume_path}')
         # load meta information
         ckpt_meta = torch.load(os.path.join(resume_path, 'meta.pt'), map_location='cpu')
         step = ckpt_meta['step'] + 1
         logger.info(f'Restart training at step {step}')
 
+    # DEFINE LOSSES
+    hinge_loss = HingeLoss(discriminator=disc).to(device)
+    lpips = LPIPSLoss().to(device)
+
     # PREPARE FOR DISTRIBUTED MODE AND MIXED PRECISION
-    model, optimizer, train_loader = accelerator.prepare(model, optimizer, train_loader)  # type: ignore
+    model, disc, optimizer, optimizer_d, train_loader = accelerator.prepare(
+        model, disc, optimizer, optimizer_d, train_loader,  # type: ignore
+    )
     unwrapped_model = accelerator.unwrap_model(model)
+    unwrapped_disc = accelerator.unwrap_model(disc)
 
     accelerator.wait_for_everyone()
 
@@ -148,48 +165,96 @@ def main():
     def save_ckpt(save_path: str):
         os.makedirs(save_path, exist_ok=True)
         # save model
-        accelerator.save(dict(model=unwrapped_model.state_dict()), os.path.join(save_path, 'model.pt'))
+        accelerator.save(dict(
+            model=unwrapped_model.state_dict(),
+            disc=unwrapped_disc.state_dict(),
+        ), os.path.join(save_path, 'model.pt'))
         # save optimizer
-        accelerator.save(dict(optimizer=optimizer.state_dict()), os.path.join(save_path, 'optimizer.pt'))
+        accelerator.save(dict(
+            optimizer=optimizer.state_dict(),
+            optimizer_d=optimizer_d.state_dict(),
+        ), os.path.join(save_path, 'optimizer.pt'))
         # save meta information
         accelerator.save(dict(step=step), os.path.join(save_path, 'meta.pt'))
 
-    def run_step(batch):
-        x = discard_label(batch).float()
-        out = model(x)
-        # reconstruction loss
-        loss_rec = F.mse_loss(out['decx'], x)
-        # commitment loss
-        loss_commit = out['loss_commit']
-        # vq loss
-        loss_vq = out['loss_vq'] if not quantizer.use_ema_update else torch.tensor(0.0, device=device)
-        # total loss
-        loss = loss_rec + loss_vq + conf.train.coef_commit * loss_commit
-        # optimize
-        optimizer.zero_grad()
-        accelerator.backward(loss)
-        optimizer.step()
-        # use EMA update for codebook
-        if quantizer.use_ema_update:
-            # count used codebook entries
-            codebook_num = quantizer.codebook_num
-            codebook_dim = quantizer.codebook_dim
-            flat_z = out['z'].detach().permute(0, 2, 3, 1).reshape(-1, codebook_dim)
-            indices_count = torch.bincount(out['indices'], minlength=codebook_num)
-            new_sumz = torch.zeros((codebook_num, codebook_dim), device=device)
-            new_sumz.scatter_add_(dim=0, index=out['indices'][:, None].repeat(1, codebook_dim), src=flat_z)
-            # reduce sumz and sumn across all processes
-            new_sumz = accelerate.utils.reduce(new_sumz, reduction='sum')
-            new_sumn = accelerate.utils.reduce(indices_count, reduction='sum')
-            # update codebook
-            quantizer.update_codebook(new_sumz, new_sumn)
+    def calc_adaptive_weight(loss_nll, loss_adv, last_layer):
+        nll_grads = torch.autograd.grad(loss_nll, last_layer, retain_graph=True)[0]
+        adv_grads = torch.autograd.grad(loss_adv, last_layer, retain_graph=True)[0]
+        d_weight = torch.norm(nll_grads) / (torch.norm(adv_grads) + 1e-4)
+        d_weight = torch.clamp(d_weight, 0.0, 1e4).detach()
+        return d_weight
 
+    def run_step(batch):
+        optimizer.zero_grad()
+        x = discard_label(batch).float()
+        bs = x.shape[0]
+        for i in range(0, bs, micro_bs):
+            micro_x = x[i:i+micro_bs]
+            loss_scale = micro_x.shape[0] / bs
+            model_no_sync = accelerator.no_sync(model) if i + micro_bs < bs else nullcontext()
+            disc_no_sync = accelerator.no_sync(disc) if i + micro_bs < bs else nullcontext()
+            with model_no_sync, disc_no_sync:
+                out = model(micro_x)
+                # reconstruction loss
+                if conf.train.type_rec == 'l2':
+                    loss_rec = F.mse_loss(out['decx'], x)
+                elif conf.train.type_rec == 'l1':
+                    loss_rec = F.l1_loss(out['decx'], x)
+                else:
+                    raise ValueError(f'Unknown reconstruction loss type: {conf.train.type_rec}')
+                # perceptual loss
+                loss_lpips = lpips(out['decx'], x).mean()
+                # commitment loss
+                loss_commit = out['loss_commit']
+                # vq loss
+                loss_vq = out['loss_vq']
+                # adversarial loss
+                loss_adv = torch.tensor(0.0, device=out['decx'].device, requires_grad=True)
+                if step >= conf.train.start_adv:
+                    loss_adv = hinge_loss('G', out['decx'])
+                    if conf.train.adaptive_adv_weight:
+                        loss_nll = conf.train.coef_rec * loss_rec + conf.train.coef_lpips * loss_lpips
+                        adaptive_weight = calc_adaptive_weight(loss_nll, loss_adv, unwrapped_model.last_layer)
+                        loss_adv = adaptive_weight * loss_adv
+                # total loss
+                loss = (
+                    conf.train.coef_rec * loss_rec +
+                    conf.train.coef_lpips * loss_lpips +
+                    conf.train.coef_commit * loss_commit +
+                    conf.train.coef_vq * loss_vq +
+                    conf.train.coef_adv * loss_adv
+                )
+                accelerator.backward(loss * loss_scale)
+        optimizer.step()
         return dict(
             loss_rec=loss_rec.item(),
-            loss_vq=loss_vq.item(),
+            loss_lpips=loss_lpips.item(),
             loss_commit=loss_commit.item(),
+            loss_vq=loss_vq.item(),
+            loss_adv_g=loss_adv.item(),
             perplexity=out['perplexity'].item(),
             lr=optimizer.param_groups[0]['lr'],
+        )
+
+    def run_step_d(batch):
+        optimizer_d.zero_grad()
+        x = discard_label(batch).float()
+        bs = x.shape[0]
+        for i in range(0, bs, micro_bs):
+            micro_x = x[i:i+micro_bs]
+            loss_scale = micro_x.shape[0] / bs
+            model_no_sync = accelerator.no_sync(model) if i + micro_bs < bs else nullcontext()
+            disc_no_sync = accelerator.no_sync(disc) if i + micro_bs < bs else nullcontext()
+            with model_no_sync, disc_no_sync:
+                loss_adv_d = torch.tensor(0.0, device=device, requires_grad=True)
+                if step >= conf.train.start_adv:
+                    out = model(micro_x)
+                    loss_adv_d = hinge_loss('D', out['decx'], micro_x)
+                accelerator.backward(loss_adv_d * loss_scale)
+        optimizer_d.step()
+        return dict(
+            loss_adv_d=loss_adv_d.item(),
+            lr_d=optimizer_d.param_groups[0]['lr'],
         )
 
     @accelerator.on_main_process
@@ -217,6 +282,8 @@ def main():
         # run a step
         model.train()
         train_status = run_step(_batch)
+        status_tracker.track_status('Train', train_status, step)
+        train_status = run_step_d(_batch)
         status_tracker.track_status('Train', train_status, step)
         accelerator.wait_for_everyone()
         # validate

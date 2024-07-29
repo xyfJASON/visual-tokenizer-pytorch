@@ -95,6 +95,10 @@ class Decoder(BaseDecoder):
     def upsample_factor(self):
         return 4
 
+    @property
+    def last_layer(self):
+        return self.upblocks[-2].weight
+
     def forward(self, x: Tensor):
         x = self.resblocks(x)
         x = self.upblocks(x)

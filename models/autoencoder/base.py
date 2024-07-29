@@ -25,3 +25,8 @@ class BaseDecoder(nn.Module, ABC):
     @abstractmethod
     def upsample_factor(self):
         pass
+
+    @property
+    @abstractmethod
+    def last_layer(self):
+        pass
