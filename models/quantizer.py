@@ -5,10 +5,11 @@ from torch import Tensor
 
 
 class VectorQuantizer(nn.Module):
-    def __init__(self, codebook_num: int, codebook_dim: int):
+    def __init__(self, codebook_num: int, codebook_dim: int, l2_norm: bool = False):
         super().__init__()
         self.codebook_num = codebook_num
         self.codebook_dim = codebook_dim
+        self.norm_fn = lambda x: F.normalize(x, p=2, dim=1) if l2_norm else x
 
         self.codebook = nn.Embedding(codebook_num, codebook_dim)
         nn.init.uniform_(self.codebook.weight, -1 / self.codebook_num, 1 / self.codebook_num)
@@ -16,13 +17,15 @@ class VectorQuantizer(nn.Module):
     def forward(self, z: Tensor):
         B, C, H, W = z.shape
         flat_z = z.permute(0, 2, 3, 1).reshape(-1, C)
+        flat_z = self.norm_fn(flat_z)
+        codebook_weight = self.norm_fn(self.codebook.weight)
 
         dists = (torch.sum(flat_z ** 2, dim=1, keepdim=True) +
-                 torch.sum(self.codebook.weight ** 2, dim=1) -
-                 2 * torch.mm(flat_z, self.codebook.weight.T))
+                 torch.sum(codebook_weight ** 2, dim=1) -
+                 2 * torch.mm(flat_z, codebook_weight.T))
         indices = torch.argmin(dists, dim=1)
 
-        quantized_z = self.codebook(indices).reshape(B, H, W, C).permute(0, 3, 1, 2)
+        quantized_z = self.norm_fn(self.codebook(indices)).reshape(B, H, W, C).permute(0, 3, 1, 2)
         quantized_z_st = z + (quantized_z - z).detach()
 
         # Calculate the perplexity of embeddings to monitor training

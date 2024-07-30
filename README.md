@@ -14,10 +14,10 @@ Implement visual tokenizers with PyTorch.
 
 <table style="text-align: center;">
 <tr>
-    <th style="text-align: center">Network arch.</th>
     <th style="text-align: center">Quantizer type</th>
     <th style="text-align: center">Codebook dim.</th>
     <th style="text-align: center">Codebook size</th>
+    <th style="text-align: center">l2-norm codes</th> 
     <th style="text-align: center">Codebook usage↑</th>
     <th style="text-align: center">Perplexity↑</th>
     <th style="text-align: center">PSNR↑</th>
@@ -25,10 +25,10 @@ Implement visual tokenizers with PyTorch.
     <th style="text-align: center">rFID↓</th>
 </tr>
 <tr>
-    <td style="text-align: center" rowspan="7"><a href="./models/autoencoder/simple_cnn.py">Simple CNN</a></td>
-    <td style="text-align: center" rowspan="5">VQ loss</td>
+    <td style="text-align: center" rowspan="7">VQ loss</td>
     <td style="text-align: center">64</td>
     <td style="text-align: center">512</td>
+    <td style="text-align: center">No</td>
     <td style="text-align: center">56.05%</td>
     <td style="text-align: center">243.6920</td>
     <td style="text-align: center">31.5486</td>
@@ -38,6 +38,7 @@ Implement visual tokenizers with PyTorch.
 <tr>
     <td style="text-align: center">64</td>
     <td style="text-align: center">1024</td>
+    <td style="text-align: center">No</td>
     <td style="text-align: center">30.08%</td>
     <td style="text-align: center">247.6679</td>
     <td style="text-align: center">31.3835</td>
@@ -47,6 +48,7 @@ Implement visual tokenizers with PyTorch.
 <tr>
     <td style="text-align: center">64</td>
     <td style="text-align: center">2048</td>
+    <td style="text-align: center">No</td>
     <td style="text-align: center">16.02%</td>
     <td style="text-align: center">277.0735</td>
     <td style="text-align: center">31.6631</td>
@@ -56,6 +58,7 @@ Implement visual tokenizers with PyTorch.
 <tr>
     <td style="text-align: center">16</td>
     <td style="text-align: center">512</td>
+    <td style="text-align: center">No</td>
     <td style="text-align: center">68.55%</td>
     <td style="text-align: center">261.1088</td>
     <td style="text-align: center">31.6908</td>
@@ -65,6 +68,7 @@ Implement visual tokenizers with PyTorch.
 <tr>
     <td style="text-align: center">4</td>
     <td style="text-align: center">512</td>
+    <td style="text-align: center">No</td>
     <td style="text-align: center">100.00%</td>
     <td style="text-align: center">431.3428</td>
     <td style="text-align: center">32.2119</td>
@@ -72,9 +76,30 @@ Implement visual tokenizers with PyTorch.
     <td style="text-align: center">16.3249</td>
 </tr>
 <tr>
+    <td style="text-align: center">64</td>
+    <td style="text-align: center">512</td>
+    <td style="text-align: center">Yes</td>
+    <td style="text-align: center">98.24%</td>
+    <td style="text-align: center">414.7724</td>
+    <td style="text-align: center">31.3334</td>
+    <td style="text-align: center">0.9442</td>
+    <td style="text-align: center">12.9127</td>
+</tr>
+<tr>
+    <td style="text-align: center">4</td>
+    <td style="text-align: center">512</td>
+    <td style="text-align: center">Yes</td>
+    <td style="text-align: center">100.00%</td>
+    <td style="text-align: center">442.4423</td>
+    <td style="text-align: center">32.2439</td>
+    <td style="text-align: center">0.9473</td>
+    <td style="text-align: center">16.4495</td>
+</tr>
+<tr>
     <td style="text-align: center" rowspan="2">EMA</td>
     <td style="text-align: center">64</td>
     <td style="text-align: center">512</td>
+    <td style="text-align: center">No</td>
     <td style="text-align: center">100.00%</td>
     <td style="text-align: center">427.3798</td>
     <td style="text-align: center">32.0708</td>
@@ -84,6 +109,7 @@ Implement visual tokenizers with PyTorch.
 <tr>
     <td style="text-align: center">4</td>
     <td style="text-align: center">512</td>
+    <td style="text-align: center">No</td>
     <td style="text-align: center">100.00%</td>
     <td style="text-align: center">435.1512</td>
     <td style="text-align: center">32.3069</td>
@@ -92,6 +118,7 @@ Implement visual tokenizers with PyTorch.
 </tr>
 </table>
 
+- The network architecture for all the experiments above is [SimpleCNN](./models/autoencoder/simple_cnn.py).
 - Results are tested on CelebA test set which contains 19962 images.
 - Codebook usage is calculated as the percentage of used codes in the queue of size 65536 over the whole codebook size.
 - Perplexity is also calculated based on the queue of size 65536.
@@ -113,6 +140,7 @@ Implement visual tokenizers with PyTorch.
 
 - Smaller codebook dimension leads to higher codebook usage and better reconstruction quality.
 - EMA codebook achieves better codebook usage and reconstruction quality than the VQ loss codebook.
+- The l2-normalized codes can improve the codebook usage and reconstruction quality.
 
 <br/>
 
