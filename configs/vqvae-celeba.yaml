@@ -29,6 +29,9 @@ quantizer:
   params:
     codebook_num: 512
     codebook_dim: 64
+    l2_norm: false
+    use_ema_update: false
+    ema_decay: 0.99
 
 train:
   n_steps: 500000

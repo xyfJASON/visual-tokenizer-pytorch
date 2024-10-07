@@ -155,30 +155,28 @@ def main():
         # reconstruction loss
         loss_rec = F.mse_loss(out['decx'], x)
         # commitment loss
-        loss_commit = F.mse_loss(out['z'], out['quantized_z'].detach())
+        loss_commit = out['loss_commit']
         # vq loss
-        is_ema = hasattr(quantizer, 'update_codebook')
-        if is_ema:
-            loss_vq = torch.tensor(0.0, device=device)
-        else:
-            loss_vq = F.mse_loss(out['z'].detach(), out['quantized_z'])
+        loss_vq = out['loss_vq'] if not quantizer.use_ema_update else torch.tensor(0.0, device=device)
         # total loss
         loss = loss_rec + loss_vq + conf.train.coef_commit * loss_commit
         # optimize
         optimizer.zero_grad()
         accelerator.backward(loss)
         optimizer.step()
-        # update codebook
-        if is_ema:
+        # use EMA update for codebook
+        if quantizer.use_ema_update:
+            # count used codebook entries
             codebook_num = quantizer.codebook_num
             codebook_dim = quantizer.codebook_dim
             flat_z = out['z'].detach().permute(0, 2, 3, 1).reshape(-1, codebook_dim)
             indices_count = torch.bincount(out['indices'], minlength=codebook_num)
             new_sumz = torch.zeros((codebook_num, codebook_dim), device=device)
             new_sumz.scatter_add_(dim=0, index=out['indices'][:, None].repeat(1, codebook_dim), src=flat_z)
-
+            # reduce sumz and sumn across all processes
             new_sumz = accelerate.utils.reduce(new_sumz, reduction='sum')
             new_sumn = accelerate.utils.reduce(indices_count, reduction='sum')
+            # update codebook
             quantizer.update_codebook(new_sumz, new_sumn)
 
         return dict(

@@ -34,24 +34,22 @@ class VQModel(nn.Module):
     def forward(self, x: Tensor):
         z = self.encoder(x)
         z = self.enc2code(z)
-        quantized_z, quantized_z_st, indices, perplexity = self.quantizer(z)
-        decx = self.code2dec(quantized_z_st)
+        out = self.quantizer(z)
+        decx = self.code2dec(out['quantized_z'])
         decx = self.decoder(decx)
         return dict(
-            decx=decx, z=z, indices=indices, perplexity=perplexity,
-            quantized_z=quantized_z, quantized_z_st=quantized_z_st,
-        )
-
-    def encode(self, x: Tensor):
-        z = self.encoder(x)
-        z = self.enc2code(z)
-        quantized_z, quantized_z_st, indices, perplexity = self.quantizer(z)
-        return dict(
-            z=z, indices=indices, perplexity=perplexity,
-            quantized_z=quantized_z, quantized_z_st=quantized_z_st,
+            decx=decx, z=z, indices=out['indices'],
+            perplexity=out['perplexity'], quantized_z=out['quantized_z'],
+            loss_vq=out['loss_vq'], loss_commit=out['loss_commit'],
         )
 
     def decode(self, z: Tensor):
+        decx = self.code2dec(z)
+        decx = self.decoder(decx)
+        return decx
+
+    def decode_indices(self, indices: Tensor):
+        z = self.codebook(indices)
         decx = self.code2dec(z)
         decx = self.decoder(decx)
         return decx
