@@ -30,7 +30,7 @@ Implement visual tokenizers with PyTorch.
     <th style="text-align: center">rFID↓</th>
 </tr>
 <tr>
-    <td style="text-align: center" rowspan="7">VQ loss</td>
+    <td style="text-align: center" rowspan="9">VQ loss</td>
     <td style="text-align: center">4</td>
     <td style="text-align: center">512</td>
     <td style="text-align: center">No</td>
@@ -40,6 +40,15 @@ Implement visual tokenizers with PyTorch.
     <td style="text-align: center">16.3249</td>
 </tr>
 <tr>
+    <td style="text-align: center">8</td>
+    <td style="text-align: center">512</td>
+    <td style="text-align: center">No</td>
+    <td style="text-align: center">100.00%</td>
+    <td style="text-align: center">32.2406</td>
+    <td style="text-align: center">0.9459</td>
+    <td style="text-align: center">16.6592</td>
+</tr>
+<tr>
     <td style="text-align: center">16</td>
     <td style="text-align: center">512</td>
     <td style="text-align: center">No</td>
@@ -47,6 +56,15 @@ Implement visual tokenizers with PyTorch.
     <td style="text-align: center">31.6908</td>
     <td style="text-align: center">0.9412</td>
     <td style="text-align: center">16.4272</td>
+</tr>
+<tr>
+    <td style="text-align: center">32</td>
+    <td style="text-align: center">512</td>
+    <td style="text-align: center">No</td>
+    <td style="text-align: center">66.21%</td>
+    <td style="text-align: center">31.7674</td>
+    <td style="text-align: center">0.9417</td>
+    <td style="text-align: center">16.3970</td>
 </tr>
 <tr>
     <td style="text-align: center">64</td>
@@ -159,7 +177,7 @@ Using hyperparameters from ["Taming Transformers"](http://arxiv.org/abs/2012.098
 </tr>
 </table>
 
-⚠️: The rFID is much worse than the results reported in the paper (7.94).
+⚠️ The rFID is much worse than the results reported in the paper (7.94).
 
 Using hyperparameters from ["LlamaGen"](http://arxiv.org/abs/2406.06525) paper (see [config](./configs/vqgan-imagenet-llamagen.yaml)):
 
@@ -186,7 +204,7 @@ Using hyperparameters from ["LlamaGen"](http://arxiv.org/abs/2406.06525) paper (
 </tr>
 </table>
 
-⚠️: The SSIM and rFID are worse than the results reported in the paper (0.675 & 2.19).
+⚠️ The SSIM and rFID are worse than the results reported in the paper (0.675 & 2.19).
 
 <br/>
 
