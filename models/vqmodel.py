@@ -41,11 +41,7 @@ class VQModel(nn.Module):
         out = self.quantizer(z)
         decx = self.code2dec(out['quantized_z'])
         decx = self.decoder(decx)
-        return dict(
-            decx=decx, z=z, indices=out['indices'],
-            perplexity=out['perplexity'], quantized_z=out['quantized_z'],
-            loss_vq=out['loss_vq'], loss_commit=out['loss_commit'],
-        )
+        return dict(decx=decx, z=z, **out)
 
     def decode(self, z: Tensor):
         decx = self.code2dec(z)
