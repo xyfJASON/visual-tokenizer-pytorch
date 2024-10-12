@@ -32,6 +32,10 @@ class VQModel(nn.Module):
         return self.quantizer.codebook_num
 
     @property
+    def codebook_size(self):
+        return self.quantizer.codebook_size
+
+    @property
     def last_layer(self):
         return self.decoder.last_layer
 

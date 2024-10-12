@@ -4,11 +4,24 @@ Implement visual tokenizers with PyTorch.
 
 <br/>
 
+## Progress
+
+- [x] VQVAE
+- [x] VQGAN (Taming-Transformers)
+- [x] VQGAN (LlamaGen)
+- [ ] ViT-VQGAN
+- [ ] RQVAE
+- [x] FSQ
+- [ ] LFQ
+- [ ] BSQ
+
+<br/>
+
 
 
 ## Results
 
-### VQVAE on CelebA(64x64)
+### CelebA (64x64)
 
 **Implementation details**:
 
@@ -16,7 +29,7 @@ Implement visual tokenizers with PyTorch.
 - Results are tested on CelebA test set which contains 19962 images.
 - Codebook usage is calculated as the percentage of used codes in a queue of size 65536 over the whole codebook size.
 
-**Quantitative results**:
+**Quantitative results for VQVAE**:
 
 <table style="text-align: center;">
 <tr>
@@ -137,6 +150,40 @@ Implement visual tokenizers with PyTorch.
 - Smaller codebook dimension leads to higher codebook usage and better reconstruction quality.
 - The l2-normalized codes can improve the codebook usage and reconstruction quality.
 - EMA codebook achieves better codebook usage and reconstruction quality than the VQ loss codebook.
+
+**Quantitative results for FSQ-VAE**:
+
+<table style="text-align: center;">
+<tr>
+    <th style="text-align: center">Levels</th>
+    <th style="text-align: center">Codebook size</th> 
+    <th style="text-align: center">Codebook usage↑</th>
+    <th style="text-align: center">PSNR↑</th>
+    <th style="text-align: center">SSIM↑</th>
+    <th style="text-align: center">rFID↓</th>
+</tr>
+<tr>
+    <td style="text-align: center">[8,8,8]</td>
+    <td style="text-align: center">512</td>
+    <td style="text-align: center">100.00%</td>
+    <td style="text-align: center">30.8247</td>
+    <td style="text-align: center">0.9432</td>
+    <td style="text-align: center">15.6595</td>
+</tr>
+<tr>
+    <td style="text-align: center">[8,5,5,5]</td>
+    <td style="text-align: center">1000</td>
+    <td style="text-align: center">99.80%</td>
+    <td style="text-align: center">31.0169</td>
+    <td style="text-align: center">0.9486</td>
+    <td style="text-align: center">15.6485</td>
+</tr>
+</table>
+
+**Conclusions**:
+
+- FSQ-VAE does not suffer from the codebook collapse problem.
+- FSQ-VAE can achieve comparable performance with VQVAE of the same codebook size.
 
 <br/>
 
@@ -280,5 +327,15 @@ VQGAN (LlamaGen):
   author={Sun, Peize and Jiang, Yi and Chen, Shoufa and Zhang, Shilong and Peng, Bingyue and Luo, Ping and Yuan, Zehuan},
   journal={arXiv preprint arXiv:2406.06525},
   year={2024}
+}
+```
+
+FSQ:
+
+```
+@inproceedings{mentzerfinite,
+  title={Finite Scalar Quantization: VQ-VAE Made Simple},
+  author={Mentzer, Fabian and Minnen, David and Agustsson, Eirikur and Tschannen, Michael},
+  booktitle={The Twelfth International Conference on Learning Representations}
 }
 ```

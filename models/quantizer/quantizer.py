@@ -3,8 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
+from .base import BaseQuantizer
 
-class VectorQuantizer(nn.Module):
+
+class VectorQuantizer(BaseQuantizer):
     def __init__(
             self,
             codebook_num: int,
@@ -14,18 +16,34 @@ class VectorQuantizer(nn.Module):
             ema_decay: float = 0.99,
     ):
         super().__init__()
-        self.codebook_num = codebook_num
-        self.codebook_dim = codebook_dim
+        self._codebook_num = codebook_num
+        self._codebook_dim = codebook_dim
         self.norm_fn = lambda x: F.normalize(x, p=2, dim=1) if l2_norm else x
         self.use_ema_update = use_ema_update
         self.ema_decay = ema_decay
 
-        self.codebook = nn.Embedding(codebook_num, codebook_dim)
+        self._codebook = nn.Embedding(codebook_num, codebook_dim)
         nn.init.uniform_(self.codebook.weight, -1 / self.codebook_num, 1 / self.codebook_num)
 
         if self.use_ema_update:
             self.ema_sumz = nn.Parameter(self.codebook.weight.clone())
             self.ema_sumn = nn.Parameter(torch.zeros((codebook_num, )))
+
+    @property
+    def codebook(self):
+        return self._codebook
+
+    @property
+    def codebook_num(self):
+        return self._codebook_num
+
+    @property
+    def codebook_size(self):
+        return self._codebook_num
+
+    @property
+    def codebook_dim(self):
+        return self._codebook_dim
 
     def forward(self, z: Tensor, return_perplexity: bool = True):
         B, C, H, W = z.shape

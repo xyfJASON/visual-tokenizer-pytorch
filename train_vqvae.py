@@ -113,6 +113,7 @@ def main():
     encoder = instantiate_from_config(conf.encoder)
     decoder = instantiate_from_config(conf.decoder)
     quantizer = instantiate_from_config(conf.quantizer)
+    use_ema_update = getattr(quantizer, 'use_ema_update', False)
     model = VQModel(encoder=encoder, decoder=decoder, quantizer=quantizer)
     optimizer = instantiate_from_config(conf.train.optim, params=model.parameters())
     logger.info('=' * 19 + ' Model Info ' + '=' * 19)
@@ -162,7 +163,7 @@ def main():
         # commitment loss
         loss_commit = out['loss_commit']
         # vq loss
-        loss_vq = out['loss_vq'] if not quantizer.use_ema_update else torch.tensor(0.0, device=device)
+        loss_vq = out['loss_vq'] if not use_ema_update else torch.tensor(0.0, device=device, requires_grad=True)
         # total loss
         loss = loss_rec + loss_vq + conf.train.coef_commit * loss_commit
         # optimize
@@ -170,7 +171,7 @@ def main():
         accelerator.backward(loss)
         optimizer.step()
         # use EMA update for codebook
-        if quantizer.use_ema_update:
+        if use_ema_update:
             # count used codebook entries
             codebook_num = quantizer.codebook_num
             codebook_dim = quantizer.codebook_dim

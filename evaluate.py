@@ -129,14 +129,14 @@ def main():
     ssim = torch.cat(ssim_list, dim=0).mean().item()
 
     indices = torch.tensor(indices_queue)
-    codebook_num = unwrapped_vqmodel.codebook_num
-    indices_one_hot = F.one_hot(indices, num_classes=codebook_num).float()
+    codebook_size = unwrapped_vqmodel.codebook_size
+    indices_one_hot = F.one_hot(indices, num_classes=codebook_size).float()
     probs = torch.mean(indices_one_hot, dim=0)
     perplexity = torch.exp(-torch.sum(probs * torch.log(torch.clamp(probs, 1e-10))))
 
     logger.info(f'PSNR: {psnr:.4f}')
     logger.info(f'SSIM: {ssim:.4f}')
-    logger.info(f'Codebook usage: {len(torch.unique(indices)) / codebook_num * 100:.2f}%')
+    logger.info(f'Codebook usage: {len(torch.unique(indices)) / codebook_size * 100:.2f}%')
     logger.info(f'Perplexity: {perplexity:.4f}')
 
 
