@@ -14,6 +14,8 @@ class VectorQuantizer(BaseQuantizer):
             l2_norm: bool = False,
             use_ema_update: bool = False,
             ema_decay: float = 0.99,
+            use_entropy_reg: bool = False,
+            entropy_reg_temp: float = 0.01,
     ):
         super().__init__()
         self._codebook_num = codebook_num
@@ -21,6 +23,8 @@ class VectorQuantizer(BaseQuantizer):
         self.norm_fn = lambda x: F.normalize(x, p=2, dim=1) if l2_norm else x
         self.use_ema_update = use_ema_update
         self.ema_decay = ema_decay
+        self.use_entropy_reg = use_entropy_reg
+        self.entropy_reg_temp = entropy_reg_temp
 
         self._codebook = nn.Embedding(codebook_num, codebook_dim)
         nn.init.uniform_(self.codebook.weight, -1 / self.codebook_num, 1 / self.codebook_num)
@@ -63,6 +67,9 @@ class VectorQuantizer(BaseQuantizer):
         # calculate losses
         loss_vq = F.mse_loss(z.detach(), quantized_z)
         loss_commit = F.mse_loss(z, quantized_z.detach())
+        loss_entropy = None
+        if self.use_entropy_reg:
+            loss_entropy = self.entropy_loss(dists)
 
         # straight-through estimator
         quantized_z = z + (quantized_z - z).detach()
@@ -76,8 +83,19 @@ class VectorQuantizer(BaseQuantizer):
 
         return dict(
             quantized_z=quantized_z, indices=indices, perplexity=perplexity,
-            loss_vq=loss_vq, loss_commit=loss_commit,
+            loss_vq=loss_vq, loss_commit=loss_commit, loss_entropy=loss_entropy,
         )
+
+    def entropy_loss(self, dists: Tensor, eps: float = 1e-5):
+        affinity = -dists / self.entropy_reg_temp
+        probs = F.softmax(affinity, dim=1)
+        log_probs = F.log_softmax(affinity + eps, dim=1)
+        target_probs = probs
+        avg_probs = torch.mean(target_probs, dim=0)
+        avg_entropy = -torch.sum(avg_probs * torch.log(avg_probs + eps))
+        sample_entropy = -torch.mean(torch.sum(target_probs * log_probs, dim=1))
+        loss = sample_entropy - avg_entropy
+        return loss
 
     @torch.no_grad()
     def update_codebook(self, new_sumz: Tensor, new_sumn: Tensor):

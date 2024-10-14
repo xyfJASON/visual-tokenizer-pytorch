@@ -114,6 +114,7 @@ def main():
     decoder = instantiate_from_config(conf.decoder)
     quantizer = instantiate_from_config(conf.quantizer)
     use_ema_update = getattr(quantizer, 'use_ema_update', False)
+    use_entropy_reg = getattr(quantizer, 'use_entropy_reg', False)
     model = VQModel(encoder=encoder, decoder=decoder, quantizer=quantizer)
     optimizer = instantiate_from_config(conf.train.optim, params=model.parameters())
     logger.info('=' * 19 + ' Model Info ' + '=' * 19)
@@ -163,9 +164,15 @@ def main():
         # commitment loss
         loss_commit = out['loss_commit']
         # vq loss
-        loss_vq = out['loss_vq'] if not use_ema_update else torch.tensor(0.0, device=device, requires_grad=True)
+        loss_vq = out['loss_vq'] if not use_ema_update else None
+        # entropy regularization
+        loss_entropy = out['loss_entropy'] if use_entropy_reg else None
         # total loss
-        loss = loss_rec + loss_vq + conf.train.coef_commit * loss_commit
+        loss = loss_rec + conf.train.coef_commit * loss_commit
+        if not use_ema_update:
+            loss = loss + loss_vq
+        if use_entropy_reg:
+            loss = loss + conf.train.coef_entropy * loss_entropy
         # optimize
         optimizer.zero_grad()
         accelerator.backward(loss)
@@ -184,14 +191,12 @@ def main():
             new_sumn = accelerate.utils.reduce(indices_count, reduction='sum')
             # update codebook
             quantizer.update_codebook(new_sumz, new_sumn)
-
-        return dict(
-            loss_rec=loss_rec.item(),
-            loss_vq=loss_vq.item(),
-            loss_commit=loss_commit.item(),
-            perplexity=out['perplexity'].item(),
-            lr=optimizer.param_groups[0]['lr'],
-        )
+        # return
+        status = dict(loss_rec=loss_rec.item(), loss_commit=loss_commit.item())
+        status.update(dict(loss_vq=loss_vq.item())) if not use_ema_update else None
+        status.update(dict(loss_entropy=loss_entropy.item())) if use_entropy_reg else None
+        status.update(dict(perplexity=out['perplexity'].item(), lr=optimizer.param_groups[0]['lr']))
+        return status
 
     @accelerator.on_main_process
     @torch.no_grad()

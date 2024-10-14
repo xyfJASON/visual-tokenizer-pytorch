@@ -32,12 +32,15 @@ quantizer:
     l2_norm: false
     use_ema_update: false
     ema_decay: 0.99
+    use_entropy_reg: false
+    entropy_reg_temp: 0.01
 
 train:
   n_steps: 500000
   batch_size: 256
 
   coef_commit: 0.25
+  coef_entropy: 0.0
 
   print_freq: 100
   sample_freq: 10000
