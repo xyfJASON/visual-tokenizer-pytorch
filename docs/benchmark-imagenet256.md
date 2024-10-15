@@ -6,7 +6,6 @@
 
 - The network architecture for all the experiments follows the original [VQGAN](../models/autoencoder/vqgan_net.py).
 - Results are tested on ImageNet validation set which contains 50000 images.
-- Codebook usage is calculated as the percentage of used codes in a queue of size 65536 over the whole codebook size.
 
 
 
@@ -30,7 +29,7 @@ Using hyperparameters from ["Taming Transformers"](http://arxiv.org/abs/2012.098
     <td style="text-align: center">256</td>
     <td style="text-align: center">1024</td>
     <td style="text-align: center">No</td>
-    <td style="text-align: center">99.90%</td>
+    <td style="text-align: center">100.00%</td>
     <td style="text-align: center">19.4618</td>
     <td style="text-align: center">0.4644</td>
     <td style="text-align: center">18.90909</td>
@@ -57,8 +56,8 @@ Using hyperparameters from ["LlamaGen"](http://arxiv.org/abs/2406.06525) paper (
     <td style="text-align: center">8</td>
     <td style="text-align: center">16384</td>
     <td style="text-align: center">Yes</td>
-    <td style="text-align: center">94.10%</td>
-    <td style="text-align: center">20.0723</td>
+    <td style="text-align: center">100.00%</td>
+    <td style="text-align: center">20.0725</td>
     <td style="text-align: center">0.5201</td>
     <td style="text-align: center">4.061665</td>
 </tr>

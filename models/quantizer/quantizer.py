@@ -26,16 +26,12 @@ class VectorQuantizer(BaseQuantizer):
         self.use_entropy_reg = use_entropy_reg
         self.entropy_reg_temp = entropy_reg_temp
 
-        self._codebook = nn.Embedding(codebook_num, codebook_dim)
+        self.codebook = nn.Embedding(codebook_num, codebook_dim)
         nn.init.uniform_(self.codebook.weight, -1 / self.codebook_num, 1 / self.codebook_num)
 
         if self.use_ema_update:
             self.ema_sumz = nn.Parameter(self.codebook.weight.clone())
             self.ema_sumn = nn.Parameter(torch.zeros((codebook_num, )))
-
-    @property
-    def codebook(self):
-        return self._codebook
 
     @property
     def codebook_num(self):

@@ -6,7 +6,6 @@
 
 - The network architecture for all the experiments is [SimpleCNN](../models/autoencoder/simple_cnn.py).
 - Results are tested on CelebA test set which contains 19962 images.
-- Codebook usage is calculated as the percentage of used codes in a queue of size 65536 over the whole codebook size.
 
 
 
@@ -40,21 +39,21 @@
 </tr>
 <tr>
     <td style="text-align: center">16</td>
-    <td style="text-align: center">68.55%</td>
+    <td style="text-align: center">68.75%</td>
     <td style="text-align: center">31.6908</td>
     <td style="text-align: center">0.9412</td>
     <td style="text-align: center">16.4272</td>
 </tr>
 <tr>
     <td style="text-align: center">32</td>
-    <td style="text-align: center">66.21%</td>
+    <td style="text-align: center">66.41%</td>
     <td style="text-align: center">31.7674</td>
     <td style="text-align: center">0.9417</td>
     <td style="text-align: center">16.3970</td>
 </tr>
 <tr>
     <td style="text-align: center">64</td>
-    <td style="text-align: center">56.05%</td>
+    <td style="text-align: center">56.45%</td>
     <td style="text-align: center">31.5486</td>
     <td style="text-align: center">0.9389</td>
     <td style="text-align: center">16.8227</td>
@@ -77,21 +76,21 @@
 <tr>
     <td style="text-align: center" rowspan="3">64</td>
     <td style="text-align: center">512</td>
-    <td style="text-align: center">56.05%</td>
+    <td style="text-align: center">56.45%</td>
     <td style="text-align: center">31.5486</td>
     <td style="text-align: center">0.9389</td>
     <td style="text-align: center">16.8227</td>
 </tr>
 <tr>
     <td style="text-align: center">1024</td>
-    <td style="text-align: center">30.08%</td>
+    <td style="text-align: center">30.18%</td>
     <td style="text-align: center">31.3835</td>
     <td style="text-align: center">0.9395</td>
     <td style="text-align: center">16.4965</td>
 </tr>
 <tr>
     <td style="text-align: center">2048</td>
-    <td style="text-align: center">16.02%</td>
+    <td style="text-align: center">16.06%</td>
     <td style="text-align: center">31.6631</td>
     <td style="text-align: center">0.9407</td>
     <td style="text-align: center">16.5808</td>
@@ -132,7 +131,7 @@
     <td style="text-align: center" rowspan="2">64</td>
     <td style="text-align: center" rowspan="2">512</td>
     <td style="text-align: center">No</td>
-    <td style="text-align: center">56.05%</td>
+    <td style="text-align: center">56.45%</td>
     <td style="text-align: center">31.5486</td>
     <td style="text-align: center">0.9389</td>
     <td style="text-align: center">16.8227</td>
@@ -180,7 +179,7 @@
     <td style="text-align: center" rowspan="2">64</td>
     <td style="text-align: center" rowspan="2">512</td>
     <td style="text-align: center">VQ loss</td>
-    <td style="text-align: center">56.05%</td>
+    <td style="text-align: center">56.45%</td>
     <td style="text-align: center">31.5486</td>
     <td style="text-align: center">0.9389</td>
     <td style="text-align: center">16.8227</td>
@@ -212,7 +211,7 @@
     <td style="text-align: center" rowspan="2">64</td>
     <td style="text-align: center" rowspan="2">512</td>
     <td style="text-align: center">0.0</td>
-    <td style="text-align: center">56.05%</td>
+    <td style="text-align: center">56.45%</td>
     <td style="text-align: center">31.5486</td>
     <td style="text-align: center">0.9389</td>
     <td style="text-align: center">16.8227</td>

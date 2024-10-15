@@ -4,10 +4,6 @@ import torch.nn as nn
 
 
 class BaseQuantizer(nn.Module, ABC):
-    @property
-    @abstractmethod
-    def codebook(self):
-        pass
 
     @property
     @abstractmethod

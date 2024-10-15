@@ -1,7 +1,6 @@
 import argparse
 import os
 import tqdm
-from collections import deque
 from omegaconf import OmegaConf
 
 import accelerate
@@ -95,7 +94,9 @@ def main():
         os.makedirs(os.path.join(args.save_dir, 'reconstructed'), exist_ok=True)
     psnr_fn = PSNR(reduction='none').to(device)
     ssim_fn = SSIM(reduction='none').to(device)
-    psnr_list, ssim_list, indices_queue = [], [], deque(maxlen=65536)
+    psnr_list, ssim_list = [], []
+    codebook_size = unwrapped_vqmodel.codebook_size
+    indices_count = torch.zeros((codebook_size, ), device=device)
 
     with torch.no_grad():
         for x in tqdm.tqdm(dataloader, desc='Evaluating', disable=not accelerator.is_main_process):
@@ -103,6 +104,7 @@ def main():
             out = vqmodel(x)
             decx, indices = out['decx'], out['indices']
             decx = decx.clamp(-1, 1)
+            indices = indices.reshape(-1, out['quantized_z'].shape[2], out['quantized_z'].shape[3])
 
             x = image_norm_to_float(x)
             decx = image_norm_to_float(decx)
@@ -111,10 +113,10 @@ def main():
 
             psnr = accelerator.gather_for_metrics(psnr)
             ssim = accelerator.gather_for_metrics(ssim)
-            indices = accelerator.gather_for_metrics(indices)
+            indices = accelerator.gather_for_metrics(indices).flatten()
             psnr_list.append(psnr)
             ssim_list.append(ssim)
-            indices_queue.extend(indices.tolist())
+            indices_count += F.one_hot(indices, num_classes=codebook_size).sum(dim=0).float()
 
             if args.save_dir is not None:
                 x = accelerator.gather_for_metrics(x)
@@ -127,16 +129,13 @@ def main():
 
     psnr = torch.cat(psnr_list, dim=0).mean().item()
     ssim = torch.cat(ssim_list, dim=0).mean().item()
-
-    indices = torch.tensor(indices_queue)
-    codebook_size = unwrapped_vqmodel.codebook_size
-    indices_one_hot = F.one_hot(indices, num_classes=codebook_size).float()
-    probs = torch.mean(indices_one_hot, dim=0)
+    codebook_usage = torch.sum(indices_count > 0).item() / codebook_size
+    probs = indices_count / indices_count.sum()
     perplexity = torch.exp(-torch.sum(probs * torch.log(torch.clamp(probs, 1e-10))))
 
     logger.info(f'PSNR: {psnr:.4f}')
     logger.info(f'SSIM: {ssim:.4f}')
-    logger.info(f'Codebook usage: {len(torch.unique(indices)) / codebook_size * 100:.2f}%')
+    logger.info(f'Codebook usage: {codebook_usage * 100:.2f}%')
     logger.info(f'Perplexity: {perplexity:.4f}')
 
 
