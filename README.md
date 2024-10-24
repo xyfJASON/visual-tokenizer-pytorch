@@ -16,6 +16,7 @@ Implement visual tokenizers with PyTorch.
 - [x] FSQ
 - [ ] LFQ
 - [ ] BSQ
+- [ ] VQGAN+ (from MaskBit)
 
 <br/>
 
@@ -42,6 +43,14 @@ Install dependencies:
 ```shell
 pip install -r requirements.txt
 ```
+
+<br/>
+
+
+
+## Pretrained Models
+
+Download pretrained models from [Hugging Face](https://huggingface.co/xyfJASON/visual-tokenizer-pytorch/tree/main).
 
 <br/>
 
@@ -125,5 +134,16 @@ FSQ:
   booktitle={The Twelfth International Conference on Learning Representations},
   year={2024},
   url={https://openreview.net/forum?id=8ishA3LxN8}
+}
+```
+
+MaskBit:
+
+```
+@article{weber2024maskbit,
+  title={Maskbit: Embedding-free image generation via bit tokens},
+  author={Weber, Mark and Yu, Lijun and Yu, Qihang and Deng, Xueqing and Shen, Xiaohui and Cremers, Daniel and Chen, Liang-Chieh},
+  journal={arXiv preprint arXiv:2409.16211},
+  year={2024}
 }
 ```
