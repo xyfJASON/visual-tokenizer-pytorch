@@ -22,6 +22,7 @@ Using hyperparameters from ["Taming Transformers"](http://arxiv.org/abs/2012.098
     <th style="text-align: center">Codebook usage↑</th>
     <th style="text-align: center">PSNR↑</th>
     <th style="text-align: center">SSIM↑</th>
+    <th style="text-align: center">LPIPS↓</th>
     <th style="text-align: center">rFID↓</th>
 </tr>
 <tr>
@@ -30,9 +31,10 @@ Using hyperparameters from ["Taming Transformers"](http://arxiv.org/abs/2012.098
     <td style="text-align: center">1024</td>
     <td style="text-align: center">No</td>
     <td style="text-align: center">100.00%</td>
-    <td style="text-align: center">19.4618</td>
+    <td style="text-align: center">19.4617</td>
     <td style="text-align: center">0.4644</td>
-    <td style="text-align: center">18.90909</td>
+    <td style="text-align: center">0.2284</td>
+    <td style="text-align: center">18.9091</td>
 </tr>
 </table>
 
@@ -49,6 +51,7 @@ Using hyperparameters from ["LlamaGen"](http://arxiv.org/abs/2406.06525) paper (
     <th style="text-align: center">Codebook usage↑</th>
     <th style="text-align: center">PSNR↑</th>
     <th style="text-align: center">SSIM↑</th>
+    <th style="text-align: center">LPIPS↓</th>
     <th style="text-align: center">rFID↓</th>
 </tr>
 <tr>
@@ -59,7 +62,8 @@ Using hyperparameters from ["LlamaGen"](http://arxiv.org/abs/2406.06525) paper (
     <td style="text-align: center">100.00%</td>
     <td style="text-align: center">20.0725</td>
     <td style="text-align: center">0.5201</td>
-    <td style="text-align: center">4.061665</td>
+    <td style="text-align: center">0.1625</td>
+    <td style="text-align: center">4.0617</td>
 </tr>
 </table>
 
