@@ -6,7 +6,7 @@ from omegaconf import OmegaConf
 import accelerate
 import torch
 import torch.nn.functional as F
-from piqa import PSNR, SSIM
+from piqa import PSNR, SSIM, LPIPS
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 
@@ -94,7 +94,8 @@ def main():
         os.makedirs(os.path.join(args.save_dir, 'reconstructed'), exist_ok=True)
     psnr_fn = PSNR(reduction='none').to(device)
     ssim_fn = SSIM(reduction='none').to(device)
-    psnr_list, ssim_list = [], []
+    lpips_fn = LPIPS(reduction='none').to(device)
+    psnr_list, ssim_list, lpips_list = [], [], []
     codebook_size = unwrapped_vqmodel.codebook_size
     indices_count = torch.zeros((codebook_size, ), device=device)
 
@@ -110,12 +111,15 @@ def main():
             decx = image_norm_to_float(decx)
             psnr = psnr_fn(decx, x)
             ssim = ssim_fn(decx, x)
+            lpips = lpips_fn(decx, x)
 
             psnr = accelerator.gather_for_metrics(psnr)
             ssim = accelerator.gather_for_metrics(ssim)
+            lpips = accelerator.gather_for_metrics(lpips)
             indices = accelerator.gather_for_metrics(indices).flatten()
             psnr_list.append(psnr)
             ssim_list.append(ssim)
+            lpips_list.append(lpips)
             indices_count += F.one_hot(indices, num_classes=codebook_size).sum(dim=0).float()
 
             if args.save_dir is not None:
@@ -129,12 +133,14 @@ def main():
 
     psnr = torch.cat(psnr_list, dim=0).mean().item()
     ssim = torch.cat(ssim_list, dim=0).mean().item()
+    lpips = torch.cat(lpips_list, dim=0).mean().item()
     codebook_usage = torch.sum(indices_count > 0).item() / codebook_size
     probs = indices_count / indices_count.sum()
     perplexity = torch.exp(-torch.sum(probs * torch.log(torch.clamp(probs, 1e-10))))
 
     logger.info(f'PSNR: {psnr:.4f}')
     logger.info(f'SSIM: {ssim:.4f}')
+    logger.info(f'LPIPS: {lpips:.4f}')
     logger.info(f'Codebook usage: {codebook_usage * 100:.2f}%')
     logger.info(f'Perplexity: {perplexity:.4f}')
 

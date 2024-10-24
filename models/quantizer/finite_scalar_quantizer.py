@@ -102,7 +102,7 @@ class FiniteScalarQuantizer(BaseQuantizer):
         """Converts a `code` to an index in the codebook."""
         assert zhat.shape[-1] == self.codebook_dim
         zhat = self._scale_and_shift(zhat)
-        return (zhat * self.basis).sum(axis=-1).long()
+        return (zhat * self.basis).sum(dim=-1).long()
 
     def indexes_to_codes(self, indices: Tensor):
         """Inverse of `codes_to_indexes`."""
