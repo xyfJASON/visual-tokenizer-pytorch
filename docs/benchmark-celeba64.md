@@ -268,19 +268,19 @@
     <td style="text-align: center">[8,8,8]</td>
     <td style="text-align: center">512</td>
     <td style="text-align: center">100.00%</td>
-    <td style="text-align: center">30.8247</td>
-    <td style="text-align: center">0.9432</td>
-    <td style="text-align: center">0.0310</td>
-    <td style="text-align: center">15.6595</td>
+    <td style="text-align: center">30.8543</td>
+    <td style="text-align: center">0.9434</td>
+    <td style="text-align: center">0.0315</td>
+    <td style="text-align: center">15.7079</td>
 </tr>
 <tr>
     <td style="text-align: center">[8,5,5,5]</td>
     <td style="text-align: center">1000</td>
     <td style="text-align: center">100.00%</td>
-    <td style="text-align: center">31.0169</td>
-    <td style="text-align: center">0.9486</td>
-    <td style="text-align: center">0.0262</td>
-    <td style="text-align: center">15.6485</td>
+    <td style="text-align: center">30.9024</td>
+    <td style="text-align: center">0.9480</td>
+    <td style="text-align: center">0.0266</td>
+    <td style="text-align: center">15.8230</td>
 </tr>
 </table>
 

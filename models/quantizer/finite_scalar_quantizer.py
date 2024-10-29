@@ -53,7 +53,7 @@ class FiniteScalarQuantizer(BaseQuantizer):
 
     def bound(self, z: Tensor, eps: float = 1e-3):
         """Bound `z`, an array of shape (..., d)."""
-        half_l = (self.levels - 1) * (1 - eps) / 2
+        half_l = (self.levels - 1) * (1 + eps) / 2
         offset = torch.where(self.levels % 2 == 1, 0.0, 0.5)  # type: ignore
         shift = torch.atanh(offset / half_l)  # note: google's code incorrectly uses tan()
         return torch.tanh(z + shift) * half_l - offset
