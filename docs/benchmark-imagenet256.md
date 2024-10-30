@@ -15,56 +15,60 @@ Using hyperparameters from ["Taming Transformers"](http://arxiv.org/abs/2012.098
 
 <table style="text-align: center;">
 <tr>
-    <th style="text-align: center">Downsample ratio</th>
-    <th style="text-align: center">Codebook dim.</th>
-    <th style="text-align: center">Codebook size</th>
-    <th style="text-align: center">l2-norm codes</th>
-    <th style="text-align: center">Codebook usage↑</th>
-    <th style="text-align: center">PSNR↑</th>
-    <th style="text-align: center">SSIM↑</th>
-    <th style="text-align: center">LPIPS↓</th>
-    <th style="text-align: center">rFID↓</th>
+    <th>Downsample ratio</th>
+    <th>Codebook dim.</th>
+    <th>Codebook size</th>
+    <th>l2-norm codes</th>
+    <th>Codebook usage↑</th>
+    <th>PSNR↑</th>
+    <th>SSIM↑</th>
+    <th>LPIPS↓</th>
+    <th>rFID↓</th>
 </tr>
 <tr>
-    <td style="text-align: center">16</td>
-    <td style="text-align: center">256</td>
-    <td style="text-align: center">1024</td>
-    <td style="text-align: center">No</td>
-    <td style="text-align: center">100.00%</td>
-    <td style="text-align: center">19.4617</td>
-    <td style="text-align: center">0.4644</td>
-    <td style="text-align: center">0.2284</td>
-    <td style="text-align: center">18.9091</td>
+    <td>16</td>
+    <td>256</td>
+    <td>1024</td>
+    <td>No</td>
+    <td>100.00%</td>
+    <td>19.4617</td>
+    <td>0.4614</td>
+    <td>0.2284</td>
+    <td>18.9091</td>
 </tr>
 </table>
 
-⚠️ The rFID is much worse than the results reported in the paper (7.94).
+- ️🌱 The PSNR and SSIM are close to the results reported in the paper (19.4 & 0.50).
+- ⚠️ The rFID is much worse than the results reported in the paper (7.94).
+
+
 
 Using hyperparameters from ["LlamaGen"](http://arxiv.org/abs/2406.06525) paper (see [config](../configs/vqgan-imagenet-llamagen.yaml)):
 
 <table style="text-align: center;">
 <tr>
-    <th style="text-align: center">Downsample ratio</th>
-    <th style="text-align: center">Codebook dim.</th>
-    <th style="text-align: center">Codebook size</th>
-    <th style="text-align: center">l2-norm codes</th>
-    <th style="text-align: center">Codebook usage↑</th>
-    <th style="text-align: center">PSNR↑</th>
-    <th style="text-align: center">SSIM↑</th>
-    <th style="text-align: center">LPIPS↓</th>
-    <th style="text-align: center">rFID↓</th>
+    <th>Downsample ratio</th>
+    <th>Codebook dim.</th>
+    <th>Codebook size</th>
+    <th>l2-norm codes</th>
+    <th>Codebook usage↑</th>
+    <th>PSNR↑</th>
+    <th>SSIM↑</th>
+    <th>LPIPS↓</th>
+    <th>rFID↓</th>
 </tr>
 <tr>
-    <td style="text-align: center">16</td>
-    <td style="text-align: center">8</td>
-    <td style="text-align: center">16384</td>
-    <td style="text-align: center">Yes</td>
-    <td style="text-align: center">100.00%</td>
-    <td style="text-align: center">20.0725</td>
-    <td style="text-align: center">0.5201</td>
-    <td style="text-align: center">0.1625</td>
-    <td style="text-align: center">4.0617</td>
+    <td>16</td>
+    <td>8</td>
+    <td>16384</td>
+    <td>Yes</td>
+    <td>100.00%</td>
+    <td>20.0723</td>
+    <td>0.5231</td>
+    <td>0.1625</td>
+    <td>4.0617</td>
 </tr>
 </table>
 
-⚠️ The SSIM and rFID are worse than the results reported in the paper (0.675 & 2.19).
+- ️🌱 The PSNR is close to the results reported in the paper (20.79).
+- ⚠️ The SSIM and rFID are much worse than the results reported in the paper (0.675 & 2.19).

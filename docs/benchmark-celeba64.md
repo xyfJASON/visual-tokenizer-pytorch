@@ -33,7 +33,7 @@
     <td rowspan="5">512</td>
     <td>100.00%</td>
     <td>32.2119</td>
-    <td>0.9456</td>
+    <td>0.9517</td>
     <td>0.0239</td>
     <td>16.3249</td>
 </tr>
@@ -41,15 +41,15 @@
     <td>8</td>
     <td>100.00%</td>
     <td>32.2406</td>
-    <td>0.9459</td>
+    <td>0.9520</td>
     <td>0.0228</td>
     <td>16.6592</td>
 </tr>
 <tr>
     <td>16</td>
     <td>68.75%</td>
-    <td>31.6908</td>
-    <td>0.9412</td>
+    <td>31.6909</td>
+    <td>0.9473</td>
     <td>0.0263</td>
     <td>16.4272</td>
 </tr>
@@ -57,15 +57,15 @@
     <td>32</td>
     <td>66.41%</td>
     <td>31.7674</td>
-    <td>0.9417</td>
+    <td>0.9480</td>
     <td>0.0261</td>
     <td>16.3970</td>
 </tr>
 <tr>
     <td>64</td>
     <td>56.45%</td>
-    <td>31.5486</td>
-    <td>0.9389</td>
+    <td>31.5487</td>
+    <td>0.9453</td>
     <td>0.0275</td>
     <td>16.8227</td>
 </tr>
@@ -89,16 +89,16 @@
     <td rowspan="3">64</td>
     <td>512</td>
     <td>56.45%</td>
-    <td>31.5486</td>
-    <td>0.9389</td>
+    <td>31.5487</td>
+    <td>0.9453</td>
     <td>0.0275</td>
     <td>16.8227</td>
 </tr>
 <tr>
     <td>1024</td>
     <td>30.18%</td>
-    <td>31.3835</td>
-    <td>0.9395</td>
+    <td>31.3836</td>
+    <td>0.9459</td>
     <td>0.0272</td>
     <td>16.4965</td>
 </tr>
@@ -106,7 +106,7 @@
     <td>2048</td>
     <td>16.06%</td>
     <td>31.6631</td>
-    <td>0.9407</td>
+    <td>0.9470</td>
     <td>0.0264</td>
     <td>16.5808</td>
 </tr>
@@ -133,7 +133,7 @@
     <td>No</td>
     <td>100.00%</td>
     <td>32.2119</td>
-    <td>0.9456</td>
+    <td>0.9517</td>
     <td>0.0239</td>
     <td>16.3249</td>
 </tr>
@@ -150,8 +150,8 @@
     <td rowspan="2">512</td>
     <td>No</td>
     <td>56.45%</td>
-    <td>31.5486</td>
-    <td>0.9389</td>
+    <td>31.5487</td>
+    <td>0.9453</td>
     <td>0.0275</td>
     <td>16.8227</td>
 </tr>
@@ -159,7 +159,7 @@
     <td>Yes</td>
     <td>98.24%</td>
     <td>31.3334</td>
-    <td>0.9442</td>
+    <td>0.9492</td>
     <td>0.0209</td>
     <td>12.9127</td>
 </tr>
@@ -186,15 +186,15 @@
     <td>VQ loss</td>
     <td>100.00%</td>
     <td>32.2119</td>
-    <td>0.9456</td>
+    <td>0.9517</td>
     <td>0.0239</td>
     <td>16.3249</td>
 </tr>
 <tr>
     <td>EMA</td>
     <td>100.00%</td>
-    <td>32.3069</td>
-    <td>0.9468</td>
+    <td>32.3070</td>
+    <td>0.9528</td>
     <td>0.0224</td>
     <td>16.3338</td>
 </tr>
@@ -203,16 +203,16 @@
     <td rowspan="2">512</td>
     <td>VQ loss</td>
     <td>56.45%</td>
-    <td>31.5486</td>
-    <td>0.9389</td>
+    <td>31.5487</td>
+    <td>0.9453</td>
     <td>0.0275</td>
     <td>16.8227</td>
 </tr>
 <tr>
     <td>EMA</td>
     <td>100.00%</td>
-    <td>32.0708</td>
-    <td>0.9459</td>
+    <td>32.0709</td>
+    <td>0.9516</td>
     <td>0.0228</td>
     <td>15.5629</td>
 </tr>
@@ -238,8 +238,8 @@
     <td rowspan="2">512</td>
     <td>0.0</td>
     <td>56.45%</td>
-    <td>31.5486</td>
-    <td>0.9389</td>
+    <td>31.5487</td>
+    <td>0.9453</td>
     <td>0.0275</td>
     <td>16.8227</td>
 </tr>
@@ -247,7 +247,7 @@
     <td>0.1</td>
     <td>100.00%</td>
     <td>29.5755</td>
-    <td>0.9218</td>
+    <td>0.9277</td>
     <td>0.0422</td>
     <td>14.1500</td>
 </tr>
@@ -274,7 +274,7 @@
     <td style="text-align: center">512</td>
     <td style="text-align: center">100.00%</td>
     <td style="text-align: center">30.8543</td>
-    <td style="text-align: center">0.9434</td>
+    <td style="text-align: center">0.9397</td>
     <td style="text-align: center">0.0315</td>
     <td style="text-align: center">15.7079</td>
 </tr>
@@ -282,8 +282,8 @@
     <td style="text-align: center">[8,5,5,5]</td>
     <td style="text-align: center">1000</td>
     <td style="text-align: center">100.00%</td>
-    <td style="text-align: center">30.9024</td>
-    <td style="text-align: center">0.9480</td>
+    <td style="text-align: center">30.9025</td>
+    <td style="text-align: center">0.9433</td>
     <td style="text-align: center">0.0266</td>
     <td style="text-align: center">15.8230</td>
 </tr>
@@ -311,7 +311,7 @@
     <td>512</td>
     <td>100.00%</td>
     <td>26.1391</td>
-    <td>0.8630</td>
+    <td>0.8685</td>
     <td>0.0700</td>
     <td>18.5518</td>
 </table>

@@ -6,10 +6,10 @@ from omegaconf import OmegaConf
 import accelerate
 import torch
 import torch.nn.functional as F
-from piqa import PSNR, SSIM, LPIPS
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 
+from metrics import PSNR, SSIM, LPIPS
 from models.vqmodel import VQModel
 from utils.data import load_data
 from utils.logger import get_logger
@@ -49,7 +49,6 @@ def main():
     logger.info(f'Number of processes: {accelerator.num_processes}')
     logger.info(f'Distributed type: {accelerator.distributed_type}')
     logger.info(f'Mixed precision: {accelerator.mixed_precision}')
-
     accelerator.wait_for_everyone()
 
     # BUILD DATASET & DATALOADER
@@ -83,7 +82,6 @@ def main():
     # PREPARE FOR DISTRIBUTED MODE AND MIXED PRECISION
     vqmodel, dataloader = accelerator.prepare(vqmodel, dataloader)  # type: ignore
     unwrapped_vqmodel = accelerator.unwrap_model(vqmodel)
-
     accelerator.wait_for_everyone()
 
     # START EVALUATION
@@ -92,8 +90,9 @@ def main():
     if args.save_dir is not None:
         os.makedirs(os.path.join(args.save_dir, 'original'), exist_ok=True)
         os.makedirs(os.path.join(args.save_dir, 'reconstructed'), exist_ok=True)
-    psnr_fn = PSNR(reduction='none').to(device)
-    ssim_fn = SSIM(reduction='none').to(device)
+
+    psnr_fn = PSNR(reduction='none')
+    ssim_fn = SSIM(reduction='none')
     lpips_fn = LPIPS(reduction='none').to(device)
     psnr_list, ssim_list, lpips_list = [], [], []
     codebook_size = unwrapped_vqmodel.codebook_size
@@ -143,6 +142,7 @@ def main():
     logger.info(f'LPIPS: {lpips:.4f}')
     logger.info(f'Codebook usage: {codebook_usage * 100:.2f}%')
     logger.info(f'Perplexity: {perplexity:.4f}')
+    accelerator.end_training()
 
 
 if __name__ == '__main__':
