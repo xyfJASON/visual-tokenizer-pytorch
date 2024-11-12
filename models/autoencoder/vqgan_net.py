@@ -11,8 +11,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
-from .base import BaseEncoder, BaseDecoder
-
 
 class ResBlock(nn.Module):
     def __init__(self, in_channels: int, out_channels: int, dropout: float = 0.0):
@@ -80,7 +78,7 @@ class Upsample(nn.Module):
         return x
 
 
-class Encoder(BaseEncoder):
+class Encoder(nn.Module):
     def __init__(
             self,
             in_channels: int = 3,
@@ -142,7 +140,7 @@ class Encoder(BaseEncoder):
         return x
 
 
-class Decoder(BaseDecoder):
+class Decoder(nn.Module):
     def __init__(
             self,
             out_channels: int = 3,

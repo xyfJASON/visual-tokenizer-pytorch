@@ -1,17 +1,9 @@
 import torch.nn as nn
 from torch import Tensor
 
-from .quantizer.base import BaseQuantizer
-from .autoencoder.base import BaseEncoder, BaseDecoder
-
 
 class VQModel(nn.Module):
-    def __init__(
-            self,
-            encoder: BaseEncoder,
-            decoder: BaseDecoder,
-            quantizer: BaseQuantizer,
-    ):
+    def __init__(self, encoder: nn.Module, decoder: nn.Module, quantizer: nn.Module):
         super().__init__()
         self.encoder = encoder
         self.decoder = decoder

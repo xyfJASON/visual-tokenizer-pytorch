@@ -17,6 +17,7 @@ Implement visual tokenizers with PyTorch.
 - [ ] LFQ
 - [ ] BSQ
 - [ ] VQGAN+ (from MaskBit)
+- [x] SimVQ
 
 <br/>
 
@@ -53,7 +54,7 @@ pip install -r requirements.txt
 
 ## Pretrained Models
 
-Download pretrained models from [Hugging Face](https://huggingface.co/xyfJASON/visual-tokenizer-pytorch/tree/main).
+The pretrained models and training logs can be downloaded from [Hugging Face](https://huggingface.co/xyfJASON/visual-tokenizer-pytorch/tree/main).
 
 <br/>
 
@@ -147,6 +148,17 @@ MaskBit:
   title={Maskbit: Embedding-free image generation via bit tokens},
   author={Weber, Mark and Yu, Lijun and Yu, Qihang and Deng, Xueqing and Shen, Xiaohui and Cremers, Daniel and Chen, Liang-Chieh},
   journal={arXiv preprint arXiv:2409.16211},
+  year={2024}
+}
+```
+
+SimVQ:
+
+```
+@article{zhu2024addressing,
+  title={Addressing Representation Collapse in Vector Quantized Models with One Linear Layer},
+  author={Zhu, Yongxin and Li, Bocheng and Xin, Yifei and Xu, Linli},
+  journal={arXiv preprint arXiv:2411.02038},
   year={2024}
 }
 ```

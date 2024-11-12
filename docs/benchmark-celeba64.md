@@ -4,13 +4,16 @@
 
 ## Basic setup
 
-- The network architecture for all the experiments is [SimpleCNN](../models/autoencoder/simple_cnn.py).
-- Hyperparameters for all the experiments:
+This benchmark does not aim to achieve the best performance, but to gain insights into the behavior of different quantization methods.
+Therefore, we use the same basic setup for all the experiments:
+
+- The network architecture is [SimpleCNN](../models/autoencoder/simple_cnn.py).
+- Hyperparameters:
   - Batch size: 256
   - Learning rate: 4e-4
   - Optimizer: Adam
   - Training steps: 500k
-- Results are tested on CelebA test split which contains 19962 images.
+- Results are evaluated on CelebA test split which contains 19962 images.
 
 
 
@@ -218,7 +221,7 @@
 </tr>
 </table>
 
-- Use EMA to update the codebook can improve codebook usage even when codebook dimension is large.
+- Using EMA to update the codebook can improve codebook usage even when codebook dimension is large.
 
 **Effect of entropy regularization**:
 
@@ -317,3 +320,30 @@
 </table>
 
 ⚠️ The result is not as good as expected. Some details may be missing from the implementation.
+
+
+
+## SimVQ-VAE
+
+<table style="text-align: center;">
+<tr>
+    <th>Codebook dim.</th>
+    <th>Codebook size</th> 
+    <th>Codebook usage↑</th>
+    <th>PSNR↑</th>
+    <th>SSIM↑</th>
+    <th>LPIPS↓</th>
+    <th>rFID↓</th>
+</tr>
+<tr>
+    <td>64</td>
+    <td>512</td>
+    <td>100.00%</td>
+    <td>31.7468</td>
+    <td>0.9494</td>
+    <td>0.0242</td>
+    <td>14.9863</td>
+</tr>
+</table>
+
+- SimVQ addresses the codebook collapse problem by reparameterizing the codebook through a linear transformation layer.

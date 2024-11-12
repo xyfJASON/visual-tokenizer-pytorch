@@ -5,6 +5,7 @@ from omegaconf import OmegaConf
 
 import accelerate
 import torch
+import torch_fidelity
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
@@ -142,6 +143,15 @@ def main():
     logger.info(f'LPIPS: {lpips:.4f}')
     logger.info(f'Codebook usage: {codebook_usage * 100:.2f}%')
     logger.info(f'Perplexity: {perplexity:.4f}')
+
+    if accelerator.is_main_process and args.save_dir is not None:
+        fid_score = torch_fidelity.calculate_metrics(
+            input1=os.path.join(args.save_dir, 'original'),
+            input2=os.path.join(args.save_dir, 'reconstructed'),
+            fid=True, verbose=False,
+        )['frechet_inception_distance']
+        logger.info(f'rFID: {fid_score:.4f}')
+
     accelerator.end_training()
 
 

@@ -8,10 +8,9 @@ References:
 from typing import List
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
-
-from .base import BaseQuantizer
 
 
 def round_ste(z: Tensor):
@@ -20,7 +19,7 @@ def round_ste(z: Tensor):
     return z + (zhat - z).detach()
 
 
-class FiniteScalarQuantizer(BaseQuantizer):
+class FiniteScalarQuantizer(nn.Module):
     def __init__(self, levels: List[int]):
         super().__init__()
 

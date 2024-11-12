@@ -6,13 +6,12 @@ References:
 """
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
-from .base import BaseQuantizer
 
-
-class LookupFreeQuantizer(BaseQuantizer):
+class LookupFreeQuantizer(nn.Module):
     def __init__(self, dim: int, use_entropy_reg: bool = True, entropy_reg_temp: float = 0.01):
         super().__init__()
         self.dim = dim

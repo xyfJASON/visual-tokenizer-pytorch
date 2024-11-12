@@ -5,8 +5,6 @@ Simple convolutional encoder and decoder with residual blocks.
 import torch.nn as nn
 from torch import Tensor
 
-from .base import BaseEncoder, BaseDecoder
-
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels: int, out_channels: int):
@@ -23,7 +21,7 @@ class ResidualBlock(nn.Module):
         return x
 
 
-class Encoder(BaseEncoder):
+class Encoder(nn.Module):
     def __init__(
             self,
             img_channels: int = 3,
@@ -61,7 +59,7 @@ class Encoder(BaseEncoder):
         return x
 
 
-class Decoder(BaseDecoder):
+class Decoder(nn.Module):
     def __init__(
             self,
             img_channels: int = 3,

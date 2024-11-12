@@ -71,4 +71,5 @@ Using hyperparameters from ["LlamaGen"](http://arxiv.org/abs/2406.06525) paper (
 </table>
 
 - ️🌱 The PSNR is close to the results reported in the paper (20.79).
-- ⚠️ The SSIM and rFID are much worse than the results reported in the paper (0.675 & 2.19).
+- 🌱 The SSIM is close to the expected value (0.675 reported in the paper, fixed to 0.56).
+- ⚠️ The rFID is much worse than the results reported in the paper (2.19).

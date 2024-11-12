@@ -1,3 +1,5 @@
+import warnings
+
 import lpips
 import torch
 import torch.nn as nn
@@ -21,7 +23,12 @@ class LPIPS(nn.Module):
     def __init__(self, net: str = 'alex', reduction: str = 'mean'):
         super().__init__()
         self.reduction = reduction
-        self.lpips_fn = lpips.LPIPS(net=net, verbose=False).eval()
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message=r"The parameter 'pretrained' is deprecated*")
+            warnings.filterwarnings('ignore', message=r"Arguments other than a weight enum*")
+            warnings.filterwarnings('ignore', message=r"You are using `torch.load` with `weights_only=False`*")
+            self.lpips_fn = lpips.LPIPS(net=net, verbose=False).eval()
 
     def __call__(self, img1: Tensor, img2: Tensor):
         """
