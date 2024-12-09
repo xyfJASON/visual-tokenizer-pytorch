@@ -5,7 +5,6 @@ from omegaconf import OmegaConf
 import accelerate
 import torch
 import torch.nn.functional as F
-from accelerate.utils import DistributedDataParallelKwargs
 from torch.utils.data import DataLoader, Subset
 from torchvision.utils import save_image
 
@@ -13,28 +12,16 @@ from models.vqmodel import VQModel
 from utils.data import load_data
 from utils.logger import get_logger
 from utils.misc import create_exp_dir, find_resume_checkpoint, instantiate_from_config
-from utils.misc import get_time_str, check_freq, get_data_generator, discard_label
+from utils.misc import get_time_str, check_freq, get_dataloader_iterator, discard_label
 from utils.tracker import StatusTracker
 
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '-c', '--config', type=str, required=True,
-        help='Path to configuration file',
-    )
-    parser.add_argument(
-        '-e', '--exp_dir', type=str,
-        help='Path to the experiment directory. Default to be ./runs/exp-{current time}/',
-    )
-    parser.add_argument(
-        '-r', '--resume', type=str,
-        help='Resume from a checkpoint. Could be a path or `best` or `latest`',
-    )
-    parser.add_argument(
-        '-ni', '--no_interaction', action='store_true', default=False,
-        help='Do not interact with the user (always choose yes when interacting)',
-    )
+    parser.add_argument('-c', '--config', type=str, required=True, help='Path to configuration file')
+    parser.add_argument('-e', '--exp_dir', type=str, help='Path to the experiment directory. Default to be ./runs/exp-{current time}/')
+    parser.add_argument('-r', '--resume', type=str, help='Resume from a checkpoint. Could be a path or `best` or `latest`')
+    parser.add_argument('-cd', '--cover_dir', action='store_true', default=False, help='Cover the experiment directory if it exists')
     return parser
 
 
@@ -50,8 +37,7 @@ def main():
     conf = OmegaConf.merge(conf, OmegaConf.from_dotlist(unknown_args))
 
     # INITIALIZE ACCELERATOR
-    ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
-    accelerator = accelerate.Accelerator(kwargs_handlers=[ddp_kwargs])
+    accelerator = accelerate.Accelerator()
     device = accelerator.device
     print(f'Process {accelerator.process_index} using device: {device}', flush=True)
     accelerator.wait_for_everyone()
@@ -60,8 +46,8 @@ def main():
     exp_dir = args.exp_dir
     if accelerator.is_main_process:
         create_exp_dir(
-            exp_dir=exp_dir, conf_yaml=OmegaConf.to_yaml(conf), time_str=args.time_str,
-            exist_ok=args.resume is not None, no_interaction=args.no_interaction,
+            exp_dir=exp_dir, conf_yaml=OmegaConf.to_yaml(conf), subdirs=['ckpt', 'samples'],
+            time_str=args.time_str, exist_ok=args.resume is not None, cover_dir=args.cover_dir,
         )
 
     # INITIALIZE LOGGER
@@ -72,7 +58,8 @@ def main():
 
     # INITIALIZE STATUS TRACKER
     status_tracker = StatusTracker(
-        logger=logger, exp_dir=exp_dir, print_freq=conf.train.print_freq,
+        logger=logger, print_freq=conf.train.print_freq,
+        tensorboard_dir=os.path.join(exp_dir, 'tensorboard'),
         is_main_process=accelerator.is_main_process,
     )
 
@@ -83,27 +70,16 @@ def main():
     logger.info(f'Number of processes: {accelerator.num_processes}')
     logger.info(f'Distributed type: {accelerator.distributed_type}')
     logger.info(f'Mixed precision: {accelerator.mixed_precision}')
-
     accelerator.wait_for_everyone()
 
     # BUILD DATASET & DATALOADER
-    if conf.train.batch_size % accelerator.num_processes != 0:
-        raise ValueError(
-            f'Batch size should be divisible by number of processes, '
-            f'get {conf.train.batch_size} % {accelerator.num_processes} != 0'
-        )
+    assert conf.train.batch_size % accelerator.num_processes == 0
     bspp = conf.train.batch_size // accelerator.num_processes
     train_set = load_data(conf.data, split='train')
     valid_set = load_data(conf.data, split='valid')
     valid_set = Subset(valid_set, range(32))
-    train_loader = DataLoader(
-        dataset=train_set, batch_size=bspp,
-        shuffle=True, drop_last=True, **conf.dataloader,
-    )
-    valid_loader = DataLoader(
-        dataset=valid_set, batch_size=bspp,
-        shuffle=False, drop_last=False, **conf.dataloader,
-    )
+    train_loader = DataLoader(dataset=train_set, batch_size=bspp, shuffle=True, drop_last=True, **conf.dataloader)
+    valid_loader = DataLoader(dataset=valid_set, batch_size=bspp, shuffle=False, drop_last=False, **conf.dataloader)
     logger.info('=' * 19 + ' Data Info ' + '=' * 20)
     logger.info(f'Size of training set: {len(train_set)}')
     logger.info(f'Batch size per process: {bspp}')
@@ -142,7 +118,6 @@ def main():
     # PREPARE FOR DISTRIBUTED MODE AND MIXED PRECISION
     model, optimizer, train_loader = accelerator.prepare(model, optimizer, train_loader)  # type: ignore
     unwrapped_model = accelerator.unwrap_model(model)
-
     accelerator.wait_for_everyone()
 
     # TRAINING FUNCTIONS
@@ -156,7 +131,7 @@ def main():
         # save meta information
         accelerator.save(dict(step=step), os.path.join(save_path, 'meta.pt'))
 
-    def run_step(batch):
+    def train_step(batch):
         x = discard_label(batch).float()
         out = model(x)
         # reconstruction loss
@@ -213,16 +188,16 @@ def main():
 
     # START TRAINING
     logger.info('Start training...')
-    train_data_generator = get_data_generator(
+    train_loader_iterator = get_dataloader_iterator(
         dataloader=train_loader,
         tqdm_kwargs=dict(desc='Epoch', leave=False, disable=not accelerator.is_main_process),
     )
     while step < conf.train.n_steps:
         # get a batch of data
-        _batch = next(train_data_generator)
+        _batch = next(train_loader_iterator)
         # run a step
         model.train()
-        train_status = run_step(_batch)
+        train_status = train_step(_batch)
         status_tracker.track_status('Train', train_status, step)
         accelerator.wait_for_everyone()
         # validate

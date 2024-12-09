@@ -13,8 +13,9 @@ from torchvision.utils import save_image
 from metrics import PSNR, SSIM, LPIPS
 from models.vqmodel import VQModel
 from utils.data import load_data
+from utils.image import image_norm_to_float
 from utils.logger import get_logger
-from utils.misc import instantiate_from_config, discard_label, image_norm_to_float
+from utils.misc import instantiate_from_config, discard_label
 
 
 def get_parser():

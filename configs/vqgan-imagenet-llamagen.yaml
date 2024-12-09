@@ -39,11 +39,7 @@ quantizer:
     l2_norm: True
 
 disc:
-  target: models.discriminator.patchgan.PatchGANDiscriminator
-  params:
-    in_channels: 3
-    dim: 64
-    n_layers: 3
+  target: models.discriminator.PatchGANDiscriminator
 
 train:
   n_steps: 400000
