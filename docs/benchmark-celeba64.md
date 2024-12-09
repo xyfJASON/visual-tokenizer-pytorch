@@ -1,4 +1,4 @@
-# Benchmark on CelebA (64x64)
+# CelebA 64x64 Benchmark
 
 
 

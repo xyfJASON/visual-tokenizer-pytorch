@@ -8,16 +8,23 @@ Implement visual tokenizers with PyTorch.
 
 ## Progress
 
-- [x] VQVAE
+**Vector Quantization Methods**:
+
+- [x] Vector Quantization (VQVAE, VQGAN)
+- [ ] Residual Quantization (RQVAE)
+- [x] Finite Scalar Quantization (FSQ)
+- [ ] Lookup-Free Quantization (LFQ)
+- [ ] Binary Spherical Quantization (BSQ)
+- [x] SimVQ
+- [ ] Index Backpropogate Quantization (IBQ)
+- [ ] Grouped Spherical Quantization (GSQ)
+
+**ImageNet 256x256 Re-implementation**:
+
 - [x] VQGAN (Taming-Transformers)
 - [x] VQGAN (LlamaGen)
 - [ ] ViT-VQGAN
-- [ ] RQVAE
-- [x] FSQ
-- [ ] LFQ
-- [ ] BSQ
 - [ ] VQGAN+ (from MaskBit)
-- [x] SimVQ
 
 <br/>
 
@@ -52,17 +59,35 @@ pip install -r requirements.txt
 
 
 
-## Pretrained Models
+## Benchmarks
 
-The pretrained models and training logs can be downloaded from [Hugging Face](https://huggingface.co/xyfJASON/visual-tokenizer-pytorch/tree/main).
+See [benchmarks](./docs) for more details.
 
 <br/>
 
 
 
-## Benchmarks
+## Training
 
-See [benchmarks](./docs) for more details.
+```shell
+torchrun --nproc-per-node 1 train_vqvae.py -c CONFIG -e EXP_DIR
+torchrun --nproc-per-node 8 train_vqgan.py -c CONFIG -e EXP_DIR
+```
+
+<br/>
+
+
+
+## Evaluation
+
+```shell
+torchrun --nproc-per-node 8 evaluate.py \
+  -c CONFIG \
+  --weights WEIGHTS \
+  [--save_dir SAVE_DIR] \
+  [--bspp BATCH_SIZE_PER_PROC] \
+  [--seed SEED]
+```
 
 <br/>
 

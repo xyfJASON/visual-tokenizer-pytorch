@@ -38,15 +38,12 @@ quantizer:
     codebook_dim: 256
 
 disc:
-  target: models.discriminator.patchgan.PatchGANDiscriminator
-  params:
-    in_channels: 3
-    dim: 64
-    n_layers: 3
+  target: models.discriminator.PatchGANDiscriminator
+
 
 train:
-  n_steps: 500000
-  batch_size: 16
+  n_steps: 1000000
+  batch_size: 12
   micro_batch_size: ~
 
   type_rec: l1
@@ -60,16 +57,16 @@ train:
 
   print_freq: 500
   sample_freq: 10000
-  save_freq: 20000
+  save_freq: 50000
 
   optim:
     target: torch.optim.Adam
     params:
-      lr: 0.0005
+      lr: 5.4e-5
       betas: [0.5, 0.9]
 
   optim_d:
     target: torch.optim.Adam
     params:
-      lr: 0.0005
+      lr: 5.4e-5
       betas: [0.5, 0.9]
