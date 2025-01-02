@@ -14,6 +14,7 @@ from torchvision.utils import save_image
 
 from models.vqmodel import VQModel
 from losses.lpips import LPIPS as LPIPSLoss
+from losses.perceptual_loss import PerceptualLoss
 from losses.adversarial import AdversarialLoss
 from utils.data import load_data
 from utils.logger import get_logger
@@ -112,8 +113,14 @@ def main():
     # DEFINE LOSSES
     assert conf.train.type_rec in ['l2', 'l1']
     loss_rec_fn = nn.MSELoss() if conf.train.type_rec == 'l2' else nn.L1Loss()
-    loss_lpips_fn = LPIPSLoss().eval().to(device)
-    loss_adv_fn = AdversarialLoss(disc, loss_type=conf.train.get('adv_loss_type', 'hinge')).to(device)
+    assert conf.train.type_lpips in ['vgg', 'convnext_s']
+    loss_lpips_fn = LPIPSLoss() if conf.train.type_lpips == 'vgg' else PerceptualLoss()
+    loss_lpips_fn.eval().to(device)
+    loss_adv_fn = AdversarialLoss(
+        discriminator=disc,
+        loss_type=conf.train.get('adv_loss_type', 'hinge'),
+        coef_lecam_reg=conf.train.get('coef_lecam_reg', 0.0),
+    ).to(device)
 
     # RESUME TRAINING
     step, epoch = 0, 0
