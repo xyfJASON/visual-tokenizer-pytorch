@@ -132,7 +132,7 @@ def main():
         torch.save(dict(
             model=model_wo_ddp.state_dict(),
         ), os.path.join(save_path, 'model.pt'))
-        # save training states (loss_adv_fn, optimizers, step, epoch)
+        # save training states (optimizers, step, epoch)
         torch.save(dict(
             optimizer=optimizer.state_dict(),
             step=step,

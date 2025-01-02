@@ -2,10 +2,9 @@
 
 
 
-## Basic setup
+## Introduction
 
-- The network architecture for all the experiments follows the original [VQGAN](../models/autoencoder/vqgan_net.py).
-- Results are evaluated on ImageNet validation set which contains 50000 images.
+This benchmark aims to reproduce the results reported in the papers as closely as possible.
 
 
 
@@ -19,7 +18,7 @@ Using hyperparameters from ["Taming Transformers"](http://arxiv.org/abs/2012.098
 
 - ️🌱 The PSNR and SSIM are close to the results reported in the paper (19.4 & 0.50).
 - ️🌱 The rFID is even better than the results reported in the paper (7.94).
-- ⚠️ The model suffers from the low codebook usage problem.
+- 🎈 The model suffers from the low codebook usage problem.
 
 
 
