@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This benchmark does not aim to achieve the best performance, but to gain insights into the behavior of different quantization methods.
+This benchmark does not aim to achieve the best performance, but to gain insights into the behavior of various vector quantization methods.
 Therefore, we use the same basic setup for all the experiments:
 
 - Dataset: ImageNet, resized to 64x64
@@ -14,14 +14,6 @@ Therefore, we use the same basic setup for all the experiments:
   - Learning rate: 4e-4
   - Optimizer: Adam
   - Training steps: 500k
-
-We focus on the following aspects:
-  
-- Codebook dim
-- Codebook size
-- Use EMA k-means to update the codebook
-- Use l2 norm on the codes
-- Use entropy regularization
 
 
 
@@ -47,11 +39,16 @@ Conclusions:
 
 ## FSQ-VAE
 
-|   Levels    | Codebook size | Codebook usage↑ | PSNR↑ | SSIM↑ | LPIPS↓ | rFID↓ |
-|:-----------:|:-------------:|:---------------:|:-----:|:-----:|:------:|:-----:|
-|   [8,8,8]   |      512      |        %        |       |       |        |       |
-|  [8,5,5,5]  |     1000      |        %        |       |       |        |       |
-| [8,8,8,6,5] |     15360     |        %        |       |       |        |       |
+|   Levels    | Codebook size | Codebook usage↑ |  PSNR↑  | SSIM↑  | LPIPS↓ |  rFID↓  |
+|:-----------:|:-------------:|:---------------:|:-------:|:------:|:------:|:-------:|
+|   [8,8,8]   |      512      |     100.00%     | 26.0826 | 0.8456 | 0.1179 | 45.6580 |
+|  [8,5,5,5]  |     1000      |     100.00%     | 26.1262 | 0.8526 | 0.1059 | 43.4865 |
+| [8,8,8,6,5] |     15360     |     99.99%      | 27.7061 | 0.8907 | 0.0669 | 27.2670 |
+
+Conclusions:
+
+- FSQ addresses the codebook collapse problem without introducing any complicated codebook losses.
+- FSQ lags behind VQ when the codebook size is small, but outperforms VQ when the codebook size grows large. This observation is consistent with the paper.
 
 
 
@@ -61,5 +58,7 @@ Conclusions:
 |:-------------:|:-------------:|:---------------:|:-------:|:------:|:------:|:-------:|
 |      64       |      512      |     100.00%     | 26.6992 | 0.8638 | 0.0960 | 36.4991 |
 |      64       |     2048      |     100.00%     | 27.7483 | 0.8897 | 0.0654 | 27.4036 |
+
+Conclusions:
 
 - SimVQ addresses the codebook collapse problem by reparameterizing the codebook through a linear transformation layer.
