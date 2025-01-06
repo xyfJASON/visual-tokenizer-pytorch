@@ -28,12 +28,15 @@ Therefore, we use the same basic setup for all the experiments:
 |       8       |     16384     |  False  |     No      |     24.55%      | 28.5044 | 0.9017 | 0.0575 | 27.1896 |
 |      64       |     2048      |  True   |     No      |     82.71%      | 27.3169 | 0.8864 | 0.0547 | 22.6812 |
 |      64       |     16384     |  True   |     No      |     26.81%      | 27.8334 | 0.8987 | 0.0439 | 18.5483 |
+|      64       |     2048      |  False  |     Yes     |     100.00%     | 26.3328 | 0.8617 | 0.0952 | 31.8191 |
+|      64       |     16384     |  False  |     Yes     |     85.31%      | 26.7838 | 0.8695 | 0.0722 | 27.1384 |
 
 Conclusions:
 
 - As the size of the codebook increases, the codebook usage decreases, which is known as the codebook collapse problem.
 - Decreasing the codebook dim. slightly alleviates the codebook collapse problem.
 - Using l2 norm on the codes alleviates the codebook collapse problem, and significantly improves the reconstruction.
+- Entropy regularization addresses the codebook collapse problem by encouraging the codebook to be used more evenly.
 
 
 
