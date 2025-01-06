@@ -30,6 +30,7 @@ def get_parser():
     parser.add_argument('-c', '--config', type=str, required=True, help='Path to configuration file')
     parser.add_argument('-e', '--exp_dir', type=str, help='Path to the experiment directory. Default to be ./runs/exp-{current time}/')
     parser.add_argument('-r', '--resume', type=str, help='Resume from a checkpoint. Could be a path or `best` or `latest`')
+    parser.add_argument('-mp', '--mixed_precision', type=str, default=None, choices=['fp16', 'bf16'], help='Mixed precision training')
     parser.add_argument('-cd', '--cover_dir', action='store_true', default=False, help='Cover the experiment directory if it exists')
     return parser
 
@@ -71,12 +72,21 @@ def main():
         is_main_process=is_main_process(),
     )
 
+    # SET MIXED PRECISION
+    if args.mixed_precision == 'fp16':
+        mp_dtype = torch.float16
+    elif args.mixed_precision == 'bf16':
+        mp_dtype = torch.bfloat16
+    else:
+        mp_dtype = torch.float32
+
     # SET SEED
     set_seed(conf.seed + get_rank())
     logger.info('=' * 19 + ' System Info ' + '=' * 18)
     logger.info(f'Experiment directory: {exp_dir}')
     logger.info(f'Number of processes: {get_world_size()}')
     logger.info(f'Distributed mode: {is_dist_avail_and_initialized()}')
+    logger.info(f'Mixed precision: {args.mixed_precision}')
     wait_for_everyone()
 
     # BUILD DATASET AND DATALOADER
@@ -96,7 +106,7 @@ def main():
     logger.info(f'Gradient accumulation steps: {math.ceil(bspp / micro_batch_size)}')
     logger.info(f'Total batch size: {conf.train.batch_size}')
 
-    # BUILD MODEL AND OPTIMIZERS
+    # BUILD MODEL, OPTIMIZERS AND SCHEUDLERS
     encoder = instantiate_from_config(conf.encoder)
     decoder = instantiate_from_config(conf.decoder)
     quantizer = instantiate_from_config(conf.quantizer)
@@ -104,6 +114,11 @@ def main():
     model = VQModel(encoder=encoder, decoder=decoder, quantizer=quantizer).to(device)
     optimizer = instantiate_from_config(conf.train.optim, params=model.parameters())
     optimizer_d = instantiate_from_config(conf.train.optim_d, params=disc.parameters())
+    scheduler, scheduler_d = None, None
+    if conf.train.get('sched', None):
+        scheduler = instantiate_from_config(conf.train.sched, optimizer=optimizer)
+        scheduler_d = instantiate_from_config(conf.train.sched, optimizer=optimizer_d)
+    scaler = torch.cuda.amp.GradScaler(enabled=args.mixed_precision == 'fp16')
     logger.info('=' * 19 + ' Model Info ' + '=' * 19)
     logger.info(f'Number of parameters of vq model: {sum(p.numel() for p in model.parameters()):,}')
     logger.info(f'Number of parameters of discriminator: {sum(p.numel() for p in disc.parameters()):,}')
@@ -124,11 +139,16 @@ def main():
         ckpt = torch.load(os.path.join(resume_path, 'model.pt'), map_location='cpu')
         model.load_state_dict(ckpt['model'])
         logger.info(f'Successfully load model from {resume_path}')
-        # load training states (loss_adv_fn, optimizers, step, epoch)
+        # load training states (loss_adv_fn, optimizers, schedulers, scaler, step, epoch)
         ckpt = torch.load(os.path.join(resume_path, 'training_states.pt'), map_location='cpu')
         loss_adv_fn.load_state_dict(ckpt['loss_adv_fn'])
         optimizer.load_state_dict(ckpt['optimizer'])
         optimizer_d.load_state_dict(ckpt['optimizer_d'])
+        if conf.train.get('sched', None):
+            scheduler.load_state_dict(ckpt['scheduler'])
+            scheduler_d.load_state_dict(ckpt['scheduler_d'])
+        if ckpt.get('scaler', None):
+            scaler.load_state_dict(ckpt['scaler'])
         step = ckpt['step'] + 1
         epoch = ckpt['epoch']
         logger.info(f'Successfully load training states from {resume_path}')
@@ -148,17 +168,17 @@ def main():
     def save_ckpt(save_path: str):
         os.makedirs(save_path, exist_ok=True)
         # save model
-        torch.save(dict(
-            model=model_wo_ddp.state_dict(),
-        ), os.path.join(save_path, 'model.pt'))
-        # save training states (loss_adv_fn, optimizers, step, epoch)
-        torch.save(dict(
-            loss_adv_fn=loss_adv_fn_wo_ddp.state_dict(),
-            optimizer=optimizer.state_dict(),
-            optimizer_d=optimizer_d.state_dict(),
-            step=step,
-            epoch=epoch,
-        ), os.path.join(save_path, 'training_states.pt'))
+        torch.save(dict(model=model_wo_ddp.state_dict()), os.path.join(save_path, 'model.pt'))
+        # save training states (loss_adv_fn, optimizers, schedulers, scaler, step, epoch)
+        training_states = dict(
+            loss_adv_fn=loss_adv_fn_wo_ddp.state_dict(), step=step, epoch=epoch,
+            optimizer=optimizer.state_dict(), optimizer_d=optimizer_d.state_dict(),
+        )
+        if conf.train.get('sched', None):
+            training_states.update(scheduler=scheduler.state_dict(), scheduler_d=scheduler_d.state_dict())
+        if args.mixed_precision == 'fp16':
+            training_states.update(scaler=scaler.state_dict())
+        torch.save(training_states, os.path.join(save_path, 'training_states.pt'))
 
     def calc_adaptive_weight(loss_nll, loss_adv, last_layer):
         nll_grads = torch.autograd.grad(loss_nll, last_layer, retain_graph=True)[0]
@@ -174,46 +194,48 @@ def main():
             # ===================================================
             # Train vq model
             # ===================================================
-            toggle_off_gradients(disc)
-            # forward
-            out = model(x)
-            # reconstruction loss
-            loss_rec = loss_rec_fn(out['decx'], x)
-            # perceptual loss
-            loss_lpips = loss_lpips_fn(out['decx'], x).mean()
-            # commitment loss
-            loss_commit = out['loss_commit']
-            # vq loss
-            loss_vq = out['loss_vq']
-            # adversarial loss
-            loss_adv = torch.tensor(0.0, device=out['decx'].device, requires_grad=True)
-            if step >= conf.train.start_adv:
-                loss_adv = loss_adv_fn('G', fake_data=out['decx'])
-                if conf.train.adaptive_adv_weight:
-                    loss_nll = conf.train.coef_rec * loss_rec + conf.train.coef_lpips * loss_lpips
-                    adaptive_weight = calc_adaptive_weight(loss_nll, loss_adv, model_wo_ddp.last_layer)
-                    loss_adv = adaptive_weight * loss_adv
-            # total loss
-            loss = (
-                conf.train.coef_rec * loss_rec +
-                conf.train.coef_lpips * loss_lpips +
-                conf.train.coef_commit * loss_commit +
-                conf.train.coef_vq * loss_vq +
-                conf.train.coef_adv * loss_adv
-            )
+            with torch.autocast(device_type='cuda', dtype=mp_dtype):
+                toggle_off_gradients(disc)
+                # forward
+                out = model(x)
+                # reconstruction loss
+                loss_rec = loss_rec_fn(out['decx'], x)
+                # perceptual loss
+                loss_lpips = loss_lpips_fn(out['decx'], x).mean()
+                # commitment loss
+                loss_commit = out['loss_commit']
+                # vq loss
+                loss_vq = out['loss_vq']
+                # adversarial loss
+                loss_adv = torch.tensor(0.0, device=out['decx'].device, requires_grad=True)
+                if step >= conf.train.start_adv:
+                    loss_adv = loss_adv_fn('G', fake_data=out['decx'])
+                    if conf.train.get('adaptive_adv_weight', False):
+                        loss_nll = conf.train.coef_rec * loss_rec + conf.train.coef_lpips * loss_lpips
+                        adaptive_weight = calc_adaptive_weight(loss_nll, loss_adv, model_wo_ddp.last_layer)
+                        loss_adv = adaptive_weight * loss_adv
+                # total loss
+                loss = (
+                    conf.train.coef_rec * loss_rec +
+                    conf.train.coef_lpips * loss_lpips +
+                    conf.train.coef_commit * loss_commit +
+                    conf.train.coef_vq * loss_vq +
+                    conf.train.coef_adv * loss_adv
+                )
+                loss = loss * loss_scale
             # backward
-            loss = loss * loss_scale
-            loss.backward()
+            scaler.scale(loss).backward()
 
             # ===================================================
             # Train discriminator
             # ===================================================
-            toggle_on_gradients(disc)
-            # adversarial loss
-            loss_adv_d = loss_adv_fn('D', fake_data=out['decx'].detach(), real_data=x)
+            with torch.autocast(device_type='cuda', dtype=mp_dtype):
+                toggle_on_gradients(disc)
+                # adversarial loss
+                loss_adv_d = loss_adv_fn('D', fake_data=out['decx'].detach(), real_data=x)
+                loss_adv_d = loss_adv_d * loss_scale
             # backward
-            loss_adv_d = loss_adv_d * loss_scale
-            loss_adv_d.backward()
+            scaler.scale(loss_adv_d).backward()
 
         return dict(
             loss_rec=loss_rec.item(), loss_lpips=loss_lpips.item(), loss_commit=loss_commit.item(),
@@ -235,10 +257,16 @@ def main():
             status = train_micro_batch(micro_x, loss_scale, no_sync)
         # optimize
         if conf.train.get('clip_grad_norm', None):
+            scaler.unscale_(optimizer)
+            scaler.unscale_(optimizer_d)
             nn.utils.clip_grad_norm_(model.parameters(), max_norm=conf.train.clip_grad_norm)
             nn.utils.clip_grad_norm_(disc.parameters(), max_norm=conf.train.clip_grad_norm)
-        optimizer.step()
-        optimizer_d.step()
+        scaler.step(optimizer)
+        scaler.step(optimizer_d)
+        scaler.update()
+        if conf.train.get('sched', None):
+            scheduler.step()
+            scheduler_d.step()
         status.update(lr=optimizer.param_groups[0]['lr'], lr_d=optimizer_d.param_groups[0]['lr'])
         return status
 

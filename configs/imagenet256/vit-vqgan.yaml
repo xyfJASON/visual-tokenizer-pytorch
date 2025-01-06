@@ -1,0 +1,87 @@
+seed: 8888
+
+data:
+  name: imagenet
+  root: ~/data/ImageNet/ILSVRC2012/Images
+  img_size: 256
+  crop: random
+
+dataloader:
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+
+encoder:
+  target: models.autoencoder.vit.Encoder
+  params:
+    in_channels: 3
+    image_size: 256
+    patch_size: 8
+    embed_dim: 512
+    n_layers: 8
+    n_heads: 8
+    dropout: 0.0
+
+decoder:
+  target: models.autoencoder.vit.Decoder
+  params:
+    out_channels: 3
+    image_size: 256
+    patch_size: 8
+    embed_dim: 512
+    n_layers: 8
+    n_heads: 8
+    dropout: 0.0
+
+quantizer:
+  target: models.quantizer.VectorQuantizer
+  params:
+    codebook_num: 8192
+    codebook_dim: 32
+    l2_norm: True
+
+disc:
+  target: models.discriminator.StyleGANDiscriminator
+  params:
+    image_size: 256
+
+
+train:
+  n_steps: 500000
+  batch_size: 256
+  micro_batch_size: ~
+
+  type_rec: l2
+  coef_rec: 1.00
+  coef_lpips: 0.10
+  coef_commit: 0.25
+  coef_vq: 1.00
+  coef_adv: 0.10
+  start_adv: 0
+  adv_loss_type: ns
+  adaptive_adv_weight: False
+
+  print_freq: 500
+  sample_freq: 10000
+  save_freq: 50000
+
+  optim:
+    target: torch.optim.AdamW
+    params:
+      lr: 0.0001
+      betas: [0.9, 0.99]
+      weight_decay: 0.0001
+
+  optim_d:
+    target: torch.optim.AdamW
+    params:
+      lr: 0.0001
+      betas: [0.9, 0.99]
+      weight_decay: 0.0001
+
+  sched:
+    target: utils.scheduler.CosineMinimumWarmupLR
+    params:
+      warmup_steps: 50000
+      min_lr: 0.00005
+      training_steps: 500000
