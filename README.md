@@ -19,7 +19,7 @@ Implement visual tokenizers with PyTorch.
 - [ ] Index Backpropogate Quantization (IBQ)
 - [ ] Grouped Spherical Quantization (GSQ)
 
-**ImageNet 256x256 Re-implementation**:
+**ImageNet 256x256 Reproduction**:
 
 - [x] VQGAN (Taming-Transformers)
 - [x] VQGAN (LlamaGen)

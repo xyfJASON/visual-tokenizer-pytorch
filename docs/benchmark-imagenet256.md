@@ -8,9 +8,9 @@ This benchmark aims to reproduce the results reported in the papers as closely a
 
 
 
-## Quantitative results
+## VQGAN (Taming Transformers)
 
-Using hyperparameters from ["Taming Transformers"](http://arxiv.org/abs/2012.09841) paper (see [config](../configs/imagenet256/vqgan-taming.yaml)):
+[[paper]](http://arxiv.org/abs/2012.09841) [[config]](../configs/imagenet256/vqgan-taming.yaml)
 
 |  Downsample ratio   | Codebook dim. | Codebook size | Codebook usage↑ |  PSNR↑  | SSIM↑  | LPIPS↓ | rFID↓  |
 |:-------------------:|:-------------:|:-------------:|:---------------:|:-------:|:------:|:------:|:------:|
@@ -22,7 +22,9 @@ Using hyperparameters from ["Taming Transformers"](http://arxiv.org/abs/2012.098
 
 
 
-Using hyperparameters from ["LlamaGen"](http://arxiv.org/abs/2406.06525) paper (see [config](../configs/imagenet256/vqgan-llamagen.yaml)):
+## VQGAN (LlamaGen)
+
+[[paper]](http://arxiv.org/abs/2406.06525) [[config]](../configs/imagenet256/vqgan-llamagen.yaml)
 
 |  Downsample ratio  | Codebook dim. | Codebook size | Codebook usage↑ |  PSNR↑  | SSIM↑  | LPIPS↓ | rFID↓  |
 |:------------------:|:-------------:|:-------------:|:---------------:|:-------:|:------:|:------:|:------:|
@@ -30,3 +32,16 @@ Using hyperparameters from ["LlamaGen"](http://arxiv.org/abs/2406.06525) paper (
 
 - ️🌱 The PSNR is close to the results reported in the paper (20.79).
 - ️🌱 The rFID is even slightly better than the results reported in the paper (2.19).
+
+
+
+## TiTok
+
+[[paper]](https://arxiv.org/abs/2406.07550) [[project page]](https://yucornetto.github.io/projects/titok.html) [[config]](../configs/imagenet256/vqgan-titok.yaml)
+
+| \# tokens | Codebook dim. | Codebook size | Codebook usage↑ |  PSNR↑  | SSIM↑  | LPIPS↓ | rFID↓  |
+|:---------:|:-------------:|:-------------:|:---------------:|:-------:|:------:|:------:|:------:|
+|    64     |      12       |     4096      |      100%       | 17.8995 | 0.4022 | 0.2681 | 4.6691 |
+
+- ⚠️ The model is trained with a single-stage training strategy, which is different from the paper.
+- ⚠️ The results are not good. Reconstructed images contain repeated patterns and artifacts. Need further investigation.
