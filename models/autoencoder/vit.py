@@ -129,7 +129,7 @@ class Encoder(nn.Module):
 
         # reshape to 2D image
         x = x.transpose(1, 2).reshape(B, -1, H, W)  # (B, D, H, W)
-        return x
+        return x.contiguous()
 
 
 class Decoder(nn.Module):
