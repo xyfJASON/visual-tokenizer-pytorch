@@ -128,9 +128,12 @@ def main():
     # DEFINE LOSSES
     assert conf.train.type_rec in ['l2', 'l1']
     loss_rec_fn = nn.MSELoss() if conf.train.type_rec == 'l2' else nn.L1Loss()
-    assert conf.train.type_lpips in ['vgg', 'convnext_s']
-    loss_lpips_fn = LPIPSLoss() if conf.train.type_lpips == 'vgg' else PerceptualLoss()
-    loss_lpips_fn.eval().to(device)
+
+    if conf.train.get('type_lpips', 'vgg') == 'vgg':
+        loss_lpips_fn = LPIPSLoss().eval().to(device)
+    else:
+        loss_lpips_fn = PerceptualLoss(conf.train.type_lpips).eval().to(device)
+
     loss_adv_fn = AdversarialLoss(
         discriminator=disc,
         loss_type=conf.train.get('adv_loss_type', 'hinge'),

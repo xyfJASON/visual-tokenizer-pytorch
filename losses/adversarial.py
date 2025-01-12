@@ -15,6 +15,8 @@ class AdversarialLoss(nn.Module):
         Objective of the discriminator: min E[max(0, 1-D(x))] + E[max(0, 1+D(G(z)))]
         Objective of the generator: min -E[D(G(z))]
 
+    Supports LeCam regularization on the discriminator.
+
     """
     def __init__(
             self,
@@ -28,6 +30,7 @@ class AdversarialLoss(nn.Module):
 
         self.discriminator = discriminator
         self.loss_type = loss_type
+
         self.coef_lecam_reg = coef_lecam_reg
         if self.coef_lecam_reg > 0.0:
             self.lecam_reg_ema_decay = lecam_reg_ema_decay
@@ -65,6 +68,7 @@ class AdversarialLoss(nn.Module):
 
         if self.coef_lecam_reg > 0.0:
             loss = loss + self.coef_lecam_reg * self.lecam_reg(real_logits.mean(), fake_logits.mean())
+
         return loss
 
     def forward(self, mode: str, fake_data: Tensor, real_data: Tensor = None, *args, **kwargs):
