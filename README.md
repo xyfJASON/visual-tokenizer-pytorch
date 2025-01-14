@@ -25,6 +25,7 @@ Implement visual tokenizers with PyTorch.
 - [x] VQGAN (LlamaGen)
 - [ ] ViT-VQGAN
 - [ ] VQGAN+ (from MaskBit)
+- [ ] TiTok
 
 <br/>
 
@@ -166,6 +167,29 @@ FSQ:
 }
 ```
 
+LFQ (MAGVIT-v2):
+
+```
+@inproceedings{yu2024language,
+  title={Language Model Beats Diffusion - Tokenizer is key to visual generation},
+  author={Lijun Yu and Jose Lezama and Nitesh Bharadwaj Gundavarapu and Luca Versari and Kihyuk Sohn and David Minnen and Yong Cheng and Agrim Gupta and Xiuye Gu and Alexander G Hauptmann and Boqing Gong and Ming-Hsuan Yang and Irfan Essa and David A Ross and Lu Jiang},
+  booktitle={The Twelfth International Conference on Learning Representations},
+  year={2024},
+  url={https://openreview.net/forum?id=gzqrANCF4g}
+}
+```
+
+BSQ:
+
+```
+@article{zhao2024image,
+  title={Image and Video Tokenization with Binary Spherical Quantization},
+  author={Zhao, Yue and Xiong, Yuanjun and Kr{\"a}henb{\"u}hl, Philipp},
+  journal={arXiv preprint arXiv:2406.07548},
+  year={2024}
+}
+```
+
 MaskBit:
 
 ```
@@ -184,6 +208,28 @@ SimVQ:
   title={Addressing Representation Collapse in Vector Quantized Models with One Linear Layer},
   author={Zhu, Yongxin and Li, Bocheng and Xin, Yifei and Xu, Linli},
   journal={arXiv preprint arXiv:2411.02038},
+  year={2024}
+}
+```
+
+IBQ:
+
+```
+@article{shi2024taming,
+  title={Taming Scalable Visual Tokenizer for Autoregressive Image Generation},
+  author={Shi, Fengyuan and Luo, Zhuoyan and Ge, Yixiao and Yang, Yujiu and Shan, Ying and Wang, Limin},
+  journal={arXiv preprint arXiv:2412.02692},
+  year={2024}
+}
+```
+
+GSQ:
+
+```
+@article{wang2024scaling,
+  title={Scaling Image Tokenizers with Grouped Spherical Quantization},
+  author={Wang, Jiangtao and Qin, Zhen and Zhang, Yifan and Hu, Vincent Tao and Ommer, Bj{\"o}rn and Briq, Rania and Kesselheim, Stefan},
+  journal={arXiv preprint arXiv:2412.02632},
   year={2024}
 }
 ```

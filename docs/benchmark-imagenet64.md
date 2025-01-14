@@ -61,7 +61,23 @@ Conclusions:
 |:-------------:|:-------------:|:---------------:|:-------:|:------:|:------:|:-------:|
 |      64       |      512      |     100.00%     | 26.6992 | 0.8638 | 0.0960 | 36.4991 |
 |      64       |     2048      |     100.00%     | 27.7483 | 0.8897 | 0.0654 | 27.4036 |
+|      64       |     16384     |     100.00%     | 29.0372 | 0.9145 | 0.0421 | 18.6821 |
 
 Conclusions:
 
 - SimVQ addresses the codebook collapse problem by reparameterizing the codebook through a linear transformation layer.
+
+
+
+## IBQ-VAE
+
+| Codebook dim. | Codebook size | entropy reg | Codebook usage↑ |  PSNR↑  | SSIM↑  | LPIPS↓ |  rFID↓   |
+|:-------------:|:-------------:|:-----------:|:---------------:|:-------:|:------:|:------:|:--------:|
+|      64       |      512      |     Yes     |     100.00%     | 23.2083 | 0.7428 | 0.2474 | 270.1325 |
+|      64       |     2048      |     Yes     |     100.00%     | 23.9659 | 0.7785 | 0.2114 | 270.8370 |
+|      64       |     16384     |     Yes     |     100.00%     | 25.0509 | 0.8269 | 0.1320 | 274.7465 |
+
+Conclusions:
+
+- Entropy regularization is crucial for IBQ to work. The codebook quickly collapses without it.
+- ⚠️ IBQ is currently not working as expected. The reconstruction quality is poor. Maybe there's something wrong with the implementation.
