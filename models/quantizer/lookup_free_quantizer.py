@@ -2,7 +2,7 @@
 
 References:
     - https://github.com/lucidrains/vector-quantize-pytorch/blob/master/vector_quantize_pytorch/lookup_free_quantization.py
-    - https://github.com/TencentARC/Open-MAGVIT2/blob/main/taming/modules/vqvae/lookup_free_quantize.py#L122
+    - https://github.com/TencentARC/SEED-Voken/blob/main/src/Open_MAGVIT2/modules/vqvae/lookup_free_quantize.py#L122
 """
 
 import torch
@@ -45,15 +45,14 @@ class LookupFreeQuantizer(nn.Module):
         return torch.sign(z)
 
     def forward(self, z: Tensor, return_perplexity: bool = True):
-        flat_z = z.permute(0, 2, 3, 1).reshape(-1, self.dim)
-
         # quantize
         quantized_z = self.quantize(z)
 
-        # entropy regularization
+        # calculate losses
         loss_commit = F.mse_loss(z, quantized_z.detach())
         loss_entropy = None
         if self.use_entropy_reg:
+            flat_z = z.permute(0, 2, 3, 1).reshape(-1, self.dim)
             dists = -2 * torch.mm(flat_z, self.codebook.T)
             loss_entropy = self.entropy_loss(dists)
 

@@ -55,6 +55,21 @@ Conclusions:
 
 
 
+## LFQ-VAE
+
+| Codebook dim. | Codebook size | entropy reg | Codebook usage↑ |  PSNR↑  | SSIM↑  | LPIPS↓ |  rFID↓  |
+|:-------------:|:-------------:|:-----------:|:---------------:|:-------:|:------:|:------:|:-------:|
+|       9       |      512      |     Yes     |     100.00%     | 23.2721 | 0.7423 | 0.2314 | 66.2169 |
+|      11       |     2048      |     Yes     |     100.00%     | 23.8259 | 0.7770 | 0.1980 | 56.5064 |
+|      14       |     16384     |     Yes     |     100.00%     | 23.4815 | 0.7736 | 0.2007 | 57.0378 |
+
+Conclusions:
+
+- Entropy regularization is crucial for LFQ to work. The codebook quickly collapses without it.
+- ⚠️ LFQ is currently not working as expected. The reconstruction quality is poor. Maybe there's something wrong with the implementation.
+
+
+
 ## SimVQ-VAE
 
 | Codebook dim. | Codebook size | Codebook usage↑ |  PSNR↑  | SSIM↑  | LPIPS↓ |  rFID↓  |
