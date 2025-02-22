@@ -120,8 +120,20 @@ def main():
         ema = EMA(model.parameters(), **getattr(conf.train, 'ema', dict())).to(device)
 
     # BUILD OPTIMIZERS AND SCHEUDLERS
-    optimizer = instantiate_from_config(conf.train.optim, params=model.parameters())
-    optimizer_d = instantiate_from_config(conf.train.optim_d, params=disc.parameters())
+    model_parameters = model.parameters()
+    disc_parameters = disc.parameters()
+    if conf.train.get('no_weight_decay_list', None) is not None:
+        exclude = lambda n, p: any(name in n for name in conf.train.no_weight_decay_list)
+        model_parameters = [
+            {'params': [p for n, p in model.named_parameters() if exclude(n, p)], 'weight_decay': 0.},
+            {'params': [p for n, p in model.named_parameters() if not exclude(n, p)]},
+        ]
+        disc_parameters = [
+            {'params': [p for n, p in disc.named_parameters() if exclude(n, p)], 'weight_decay': 0.},
+            {'params': [p for n, p in disc.named_parameters() if not exclude(n, p)]},
+        ]
+    optimizer = instantiate_from_config(conf.train.optim, params=model_parameters)
+    optimizer_d = instantiate_from_config(conf.train.optim_d, params=disc_parameters)
     scheduler, scheduler_d = None, None
     if conf.train.get('sched', None):
         scheduler = instantiate_from_config(conf.train.sched, optimizer=optimizer)

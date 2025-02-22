@@ -1,16 +1,12 @@
 # ImageNet 256x256 Benchmark
 
-
-
-## Introduction
-
 This benchmark aims to reproduce the results reported in the papers as closely as possible.
 
 
 
 ## VQGAN (Taming Transformers)
 
-[[paper]](http://arxiv.org/abs/2012.09841) [[config]](../configs/imagenet256/vqgan-taming.yaml)
+[paper](http://arxiv.org/abs/2012.09841) / [config](../configs/imagenet256/vqgan-taming.yaml)
 
 |  Downsample ratio   | Codebook dim. | Codebook size | Codebook usage↑ |  PSNR↑  | SSIM↑  | LPIPS↓ | rFID↓  |
 |:-------------------:|:-------------:|:-------------:|:---------------:|:-------:|:------:|:------:|:------:|
@@ -24,7 +20,7 @@ This benchmark aims to reproduce the results reported in the papers as closely a
 
 ## VQGAN (LlamaGen)
 
-[[paper]](http://arxiv.org/abs/2406.06525) [[config]](../configs/imagenet256/vqgan-llamagen.yaml)
+[paper](http://arxiv.org/abs/2406.06525) / [config](../configs/imagenet256/vqgan-llamagen.yaml)
 
 |  Downsample ratio  | Codebook dim. | Codebook size | Codebook usage↑ |  PSNR↑  | SSIM↑  | LPIPS↓ | rFID↓  |
 |:------------------:|:-------------:|:-------------:|:---------------:|:-------:|:------:|:------:|:------:|
@@ -37,7 +33,7 @@ This benchmark aims to reproduce the results reported in the papers as closely a
 
 ## TiTok
 
-[[paper]](https://arxiv.org/abs/2406.07550) [[project page]](https://yucornetto.github.io/projects/titok.html) [[config]](../configs/imagenet256/vqgan-titok.yaml)
+[paper](https://arxiv.org/abs/2406.07550) / [project page](https://yucornetto.github.io/projects/titok.html) / [config](../configs/imagenet256/vqgan-titok.yaml)
 
 | \# tokens | Codebook dim. | Codebook size | Codebook usage↑ |  PSNR↑  | SSIM↑  | LPIPS↓ | rFID↓  |
 |:---------:|:-------------:|:-------------:|:---------------:|:-------:|:------:|:------:|:------:|

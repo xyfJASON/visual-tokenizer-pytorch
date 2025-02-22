@@ -87,6 +87,8 @@ train:
       betas: [0.9, 0.999]
       weight_decay: 0.0001
 
+  no_weight_decay_list: ["ln", "bias", "embed"]
+
   sched:
     target: utils.scheduler.CosineMinimumWarmupLR
     params:

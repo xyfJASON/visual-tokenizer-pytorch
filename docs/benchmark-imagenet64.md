@@ -1,9 +1,5 @@
 # ImageNet 64x64 Benchmark
 
-
-
-## Introduction
-
 This benchmark does not aim to achieve the best performance, but to gain insights into the behavior of various vector quantization methods.
 Therefore, we use the same basic setup for all the experiments:
 
@@ -31,8 +27,6 @@ Therefore, we use the same basic setup for all the experiments:
 |      64       |     2048      |  False  |     Yes     |     100.00%     | 26.3328 | 0.8617 | 0.0952 | 31.8191 |
 |      64       |     16384     |  False  |     Yes     |     85.31%      | 26.7838 | 0.8695 | 0.0722 | 27.1384 |
 
-Conclusions:
-
 - As the size of the codebook increases, the codebook usage decreases, which is known as the codebook collapse problem.
 - Decreasing the codebook dim. slightly alleviates the codebook collapse problem.
 - Using l2 norm on the codes alleviates the codebook collapse problem, and significantly improves the reconstruction.
@@ -48,8 +42,6 @@ Conclusions:
 |  [8,5,5,5]  |     1000      |     100.00%     | 26.1262 | 0.8526 | 0.1059 | 43.4865 |
 | [8,8,8,6,5] |     15360     |     99.99%      | 27.7061 | 0.8907 | 0.0669 | 27.2670 |
 
-Conclusions:
-
 - FSQ addresses the codebook collapse problem without introducing any complicated codebook losses.
 - FSQ lags behind VQ when the codebook size is small, but outperforms VQ when the codebook size grows large. This observation is consistent with the paper.
 
@@ -62,8 +54,6 @@ Conclusions:
 |       9       |      512      |     Yes     |     100.00%     | 23.2721 | 0.7423 | 0.2314 | 66.2169 |
 |      11       |     2048      |     Yes     |     100.00%     | 23.8259 | 0.7770 | 0.1980 | 56.5064 |
 |      14       |     16384     |     Yes     |     100.00%     | 23.4815 | 0.7736 | 0.2007 | 57.0378 |
-
-Conclusions:
 
 - Entropy regularization is crucial for LFQ to work. The codebook quickly collapses without it.
 - ⚠️ LFQ is currently not working as expected. The reconstruction quality is poor. Maybe there's something wrong with the implementation.
@@ -78,8 +68,6 @@ Conclusions:
 |      64       |     2048      |     100.00%     | 27.7483 | 0.8897 | 0.0654 | 27.4036 |
 |      64       |     16384     |     100.00%     | 29.0372 | 0.9145 | 0.0421 | 18.6821 |
 
-Conclusions:
-
 - SimVQ addresses the codebook collapse problem by reparameterizing the codebook through a linear transformation layer.
 
 
@@ -91,8 +79,6 @@ Conclusions:
 |      64       |      512      |     Yes     |     100.00%     | 23.2083 | 0.7428 | 0.2474 | 270.1325 |
 |      64       |     2048      |     Yes     |     100.00%     | 23.9659 | 0.7785 | 0.2114 | 270.8370 |
 |      64       |     16384     |     Yes     |     100.00%     | 25.0509 | 0.8269 | 0.1320 | 274.7465 |
-
-Conclusions:
 
 - Entropy regularization is crucial for IBQ to work. The codebook quickly collapses without it.
 - ⚠️ IBQ is currently not working as expected. The reconstruction quality is poor. Maybe there's something wrong with the implementation.
